@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('invoice')->unique();
             $table->foreignId('motor_id')->constrained('master_motors')->onDelete('cascade');
             $table->foreignId('spare_part_id')->constrained('master_spare_parts')->onDelete('cascade');
+            $table->string('jumlah');
+            $table->string('harga');
             $table->integer('order')->nullable(false);
             $table->timestamps();
         });

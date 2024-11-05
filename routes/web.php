@@ -61,8 +61,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/purchase_orders_details/show', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'show'])->name('purchase_orders_details.show')->middleware('superadmin','admin',);
     Route::get('/purchase_orders_details/create', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'create'])->name('purchase_orders_details.create')->middleware('superadmin','admin',);
     Route::post('/purchase_orders_details/store', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'store'])->name('purchase_orders_details.store')->middleware('superadmin','admin',);
-    Route::get('/purchase_orders_details/edit/{id}', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'edit'])->name('purchase_orders_details.edit')->middleware('superadmin','admin',);
-    Route::put('/purchase_orders_details/update/{id}', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'update'])->name('purchase_orders_details.update')->middleware('superadmin','admin',);
     Route::delete('/purchase_orders_details/delete/{id}', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'destroy'])->name('purchase_orders_details.delete')->middleware('superadmin','admin',);
 
 });

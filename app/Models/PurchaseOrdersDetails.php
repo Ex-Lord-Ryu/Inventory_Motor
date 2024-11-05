@@ -13,8 +13,21 @@ class PurchaseOrdersDetails extends Model
         'po_id',
         'invoice',
         'motor_id',
-        'spare_part_id'
+        'spare_part_id',
+        'jumlah',
+        'harga',
+        'total_harga',
+        'order'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($model) {
+            $model->total_harga = $model->jumlah * $model->harga;
+        });
+    }   
 
     public function purchaseOrder()
     {

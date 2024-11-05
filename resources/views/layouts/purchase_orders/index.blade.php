@@ -28,7 +28,7 @@
                         <div class="col-md-6">
                             <form action="{{ route('purchase_orders.index') }}" method="GET" class="d-flex w-100">
                                 <div class="input-group w-100">
-                                    <input type="text" name="search" class="form-control" placeholder="Search by Invoice...">
+                                    <input type="text" name="search" class="form-control" placeholder="Search by Invoice..." value="{{ request('search') }}">
                                     <div class="input-group-append">
                                         <button class="btn btn-primary" type="submit">Search</button>
                                     </div>
@@ -70,6 +70,8 @@
                                         @endif
                                     </a>
                                 </th>
+                                <th>Created At</th>
+                                <th>Updated At</th>
                                 <th>
                                     Status
                                     <a href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'status', 'order' => ($sortBy == 'status' && $order == 'asc') ? 'desc' : 'asc'])) }}">
@@ -89,6 +91,8 @@
                                     <td>{{ $order->order }}</td>
                                     <td>{{ $order->invoice }}</td>
                                     <td>{{ $order->vendor->name_Vendor }}</td>
+                                    <td>{{ $order->created_at->format('Y-m-d H:i') }}</td>
+                                    <td>{{ $order->updated_at->format('Y-m-d H:i') }}</td>
                                     <td>{{ $order->status }}</td>
                                     <td>
                                         <a href="{{ route('purchase_orders.edit', $order->id) }}" class="btn btn-primary">Edit</a>

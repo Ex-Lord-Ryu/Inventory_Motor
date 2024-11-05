@@ -1,0 +1,12 @@
+.input-group-text {
+    min-width: 40px;
+    justify-content: center;
+}
+
+.table th {
+    vertical-align: middle !important;
+}
+
+.form-control:disabled {
+    background-color: #e9ecef !important;
+}
