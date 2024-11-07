@@ -383,7 +383,9 @@
                     return;
                 }
 
-                const formData = new FormData(this);
+                const formData = new FormData();
+                formData.append('purchase_order_id', poId);
+                
                 selectedMotors.forEach((item, id) => {
                     formData.append('motor_ids[]', id);
                     formData.append('motor_quantities[]', item.quantity);
