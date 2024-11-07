@@ -13,15 +13,22 @@ return new class extends Migration
     {
         Schema::create('purchase_orders_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('po_id')->constrained('purchase_orders')->onDelete('cascade');
-            $table->string('invoice')->unique();
-            $table->foreignId('motor_id')->constrained('master_motors')->onDelete('cascade');
-            $table->foreignId('spare_part_id')->constrained('master_spare_parts')->onDelete('cascade');
-            $table->string('jumlah');
-            $table->string('harga');
-            $table->integer('order')->nullable(false);
+            $table->unsignedBigInteger('purchase_order_id');
+            $table->unsignedBigInteger('motor_id')->nullable();
+            $table->unsignedBigInteger('spare_part_id')->nullable();
+            $table->integer('jumlah'); // Mengganti quantity menjadi jumlah
+            $table->decimal('harga', 15, 2)->nullable();
+            $table->decimal('total_harga', 15, 2); // Menambahkan kolom total_harga
+            $table->string('invoice')->nullable(); // Menambahkan kolom invoice jika belum ada
+            $table->string('status')->default('active');
+            $table->integer('order')->default(0);
             $table->timestamps();
+        
+            $table->foreign('purchase_order_id')->references('id')->on('purchase_orders')->onDelete('cascade');
+            $table->foreign('motor_id')->references('id')->on('master_motors')->onDelete('set null');
+            $table->foreign('spare_part_id')->references('id')->on('master_spare_parts')->onDelete('set null');
         });
+             
     }
 
     /**

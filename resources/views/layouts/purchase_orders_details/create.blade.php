@@ -3,7 +3,6 @@
 @section('title', 'Create Purchase Order Detail')
 
 @section('content')
-
     <style>
         .input-group-text {
             min-width: 40px;
@@ -12,10 +11,42 @@
 
         .table th {
             vertical-align: middle !important;
+            background-color: #f4f6f9;
         }
 
         .form-control:disabled {
             background-color: #e9ecef !important;
+        }
+
+        .input-group .form-control {
+            text-align: center;
+        }
+
+        .quantity-input {
+            width: 60px !important;
+            text-align: center;
+        }
+
+        .price-input {
+            text-align: right !important;
+        }
+
+        .total-column {
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .modal-lg {
+            max-width: 1000px;
+        }
+
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .selected-items {
+            margin-bottom: 20px;
         }
     </style>
 
@@ -32,59 +63,56 @@
                             @csrf
 
                             <div class="form-group">
-                                <label for="po_id">Purchase Order ID</label>
-                                <select name="po_id" id="po_id" class="form-control" required>
+                                <label for="purchase_order_id">Purchase Order ID</label>
+                                <select name="purchase_order_id" id="purchase_order_id" class="form-control" required>
                                     <option value="">Select Purchase Order</option>
                                     @foreach ($purchaseOrders as $order)
                                         <option value="{{ $order->id }}">{{ $order->id }} - {{ $order->invoice }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('po_id')
+                                @error('purchase_order_id')
                                     <div class="alert alert-danger">{{ $message }}</div>
                                 @enderror
                             </div>
 
+                            <!-- Motor and Spare Part Selection with Modals -->
                             <div class="form-group">
-                                <label for="invoice">Invoice</label>
-                                <input type="text" name="invoice" id="invoice" class="form-control" required>
-                                @error('invoice')
-                                    <div class="alert alert-danger">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="form-group">
-                                <label for="motor_id">Motor</label>
-                                <div class="input-group">
+                                <label for="motor_id">Motors</label>
+                                <div class="input-group mb-3">
                                     <input type="text" id="motor_input" class="form-control" placeholder="Select Motor"
                                         readonly required>
-                                    <input type="hidden" name="motor_id" id="motor_id">
-                                    <button type="button" class="btn btn-primary" data-toggle="modal"
-                                        data-target="#motorModal">Select Motor</button>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-primary" data-toggle="modal"
+                                            data-target="#motorModal">Pilih Motor</button>
+                                    </div>
                                 </div>
-                                @error('motor_id')
-                                    <div class="alert alert-danger">{{ $message }}</div>
-                                @enderror
+                                <div id="motorSelection"></div>
                             </div>
 
                             <div class="form-group">
-                                <label for="spare_part_id">Spare Part</label>
-                                <div class="input-group">
+                                <label for="spare_part_id">Spare Parts</label>
+                                <div class="input-group mb-3">
                                     <input type="text" id="spare_part_input" class="form-control"
                                         placeholder="Select Spare Part" readonly required>
-                                    <input type="hidden" name="spare_part_id" id="spare_part_id">
-                                    <button type="button" class="btn btn-primary" data-toggle="modal"
-                                        data-target="#sparePartModal">Select Spare Part</button>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-primary" data-toggle="modal"
+                                            data-target="#sparePartModal">Pilih Spare Part</button>
+                                    </div>
                                 </div>
-                                @error('spare_part_id')
-                                    <div class="alert alert-danger">{{ $message }}</div>
-                                @enderror
+                                <div id="sparePartSelection"></div>
                             </div>
 
+                            <!-- Total Harga -->
                             <div class="form-group">
                                 <label for="total_harga">Total Harga</label>
-                                <input type="text" name="total_harga" id="total_harga" class="form-control"
-                                    placeholder="Total Price" readonly>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Rp</span>
+                                    </div>
+                                    <input type="text" name="total_harga" id="total_harga"
+                                        class="form-control text-right" placeholder="0" readonly>
+                                </div>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Create</button>
@@ -96,62 +124,43 @@
         </section>
     </div>
 
+    <!-- Motor and Spare Part Modals -->
+
     <!-- Motor Modal -->
     <div class="modal fade" id="motorModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Select Motor</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
-                            <thead class="thead-dark">
+                            <thead>
                                 <tr>
                                     <th class="text-center" style="width: 5%">No</th>
-                                    <th class="text-center" style="width: 25%">Name</th>
-                                    <th class="text-center" style="width: 20%">Jumlah</th>
-                                    <th class="text-center" style="width: 25%">Harga</th>
-                                    <th class="text-center" style="width: 25%">Action</th>
+                                    <th class="text-center" style="width: 20%">Name</th>
+                                    <th class="text-center" style="width: 20%">Quantity</th>
+                                    <th class="text-center" style="width: 25%">Price</th>
+                                    <th class="text-center" style="width: 15%">Total</th>
+                                    <th class="text-center" style="width: 15%">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($motors as $index => $motor)
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
-                                        <td>{{ $motor->name }}</td>
-                                        <td>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <button type="button" class="btn btn-secondary motor-decrement">
-                                                        <i class="fas fa-minus"></i>
-                                                    </button>
-                                                </div>
-                                                <input type="number" class="form-control text-center motor-quantity"
-                                                    value="1" min="1">
-                                                <div class="input-group-append">
-                                                    <button type="button" class="btn btn-secondary motor-increment">
-                                                        <i class="fas fa-plus"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text">Rp</span>
-                                                </div>
-                                                <input type="text" class="form-control motor-price text-right"
-                                                    placeholder="0" data-type="currency">
-                                            </div>
-                                        </td>
+                                        <td>{{ $motor->nama_motor }}</td>
+                                        <td><input type="number" class="form-control motor-quantity quantity-input"
+                                                value="1" min="1"></td>
+                                        <td><input type="text" class="form-control motor-price price-input"
+                                                placeholder="0" data-type="currency"></td>
+                                        <td class="total-column motor-total">Rp 0</td>
                                         <td class="text-center">
-                                            <button class="btn btn-primary select-motor" data-id="{{ $motor->id }}"
-                                                data-name="{{ $motor->name }}" disabled>
-                                                <i class="fas fa-check"></i> Pilih
+                                            <button class="btn btn-primary add-motor" data-id="{{ $motor->id }}"
+                                                data-name="{{ $motor->nama_motor }}">
+                                                <i class="fas fa-check"></i> Add
                                             </button>
                                         </td>
                                     </tr>
@@ -170,57 +179,35 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Select Spare Part</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
-                            <thead class="thead-dark">
+                            <thead>
                                 <tr>
                                     <th class="text-center" style="width: 5%">No</th>
-                                    <th class="text-center" style="width: 25%">Name</th>
-                                    <th class="text-center" style="width: 20%">Jumlah</th>
-                                    <th class="text-center" style="width: 25%">Harga</th>
-                                    <th class="text-center" style="width: 25%">Action</th>
+                                    <th class="text-center" style="width: 20%">Name</th>
+                                    <th class="text-center" style="width: 20%">Quantity</th>
+                                    <th class="text-center" style="width: 25%">Price</th>
+                                    <th class="text-center" style="width: 15%">Total</th>
+                                    <th class="text-center" style="width: 15%">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($spareParts as $index => $sparePart)
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
-                                        <td>{{ $sparePart->name }}</td>
-                                        <td>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <button type="button" class="btn btn-secondary spare-decrement">
-                                                        <i class="fas fa-minus"></i>
-                                                    </button>
-                                                </div>
-                                                <input type="number" class="form-control text-center spare-quantity"
-                                                    value="1" min="1">
-                                                <div class="input-group-append">
-                                                    <button type="button" class="btn btn-secondary spare-increment">
-                                                        <i class="fas fa-plus"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text">Rp</span>
-                                                </div>
-                                                <input type="text" class="form-control spare-price text-right"
-                                                    placeholder="0" data-type="currency">
-                                            </div>
-                                        </td>
+                                        <td>{{ $sparePart->nama_spare_part }}</td>
+                                        <td><input type="number" class="form-control spare-quantity quantity-input"
+                                                value="1" min="1"></td>
+                                        <td><input type="text" class="form-control spare-price price-input"
+                                                placeholder="0" data-type="currency"></td>
+                                        <td class="total-column spare-total">Rp 0</td>
                                         <td class="text-center">
-                                            <button class="btn btn-primary select-spare-part"
-                                                data-id="{{ $sparePart->id }}" data-name="{{ $sparePart->name }}"
-                                                disabled>
-                                                <i class="fas fa-check"></i> Pilih
+                                            <button class="btn btn-primary add-spare-part" data-id="{{ $sparePart->id }}"
+                                                data-name="{{ $sparePart->nama_spare_part }}">
+                                                <i class="fas fa-check"></i> Add
                                             </button>
                                         </td>
                                     </tr>
@@ -232,169 +219,219 @@
             </div>
         </div>
     </div>
+@endsection
 
-    <!-- Add this to your scripts section -->
+@push('scripts')
     <script>
-        // Format currency input
-        $("input[data-type='currency']").on({
-            keyup: function() {
-                formatCurrency($(this));
-            },
-            blur: function() {
-                formatCurrency($(this), "blur");
-            }
-        });
+        $(document).ready(function() {
+            let selectedMotors = new Map();
+            let selectedSpareParts = new Map();
+            let isSubmitting = false; // Variable to lock form submission
 
-        function formatNumber(n) {
-            // format number 1000000 to 1,234,567
-            return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-
-        function formatCurrency(input, blur) {
-            // Get input value
-            var input_val = input.val();
-
-            // Don't validate empty input
-            if (input_val === "") {
-                return;
+            function formatNumber(n) {
+                return n.toString().replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             }
 
-            // Original length
-            var original_len = input_val.length;
-
-            // Initial caret position 
-            var caret_pos = input.prop("selectionStart");
-
-            // Check for decimal
-            if (input_val.indexOf(".") >= 0) {
-                // Get position of first decimal
-                var decimal_pos = input_val.indexOf(".");
-
-                // Split number by decimal point
-                var left_side = input_val.substring(0, decimal_pos);
-                var right_side = input_val.substring(decimal_pos);
-
-                // Add commas to left side of number
-                left_side = formatNumber(left_side);
-
-                // Validate right side
-                right_side = formatNumber(right_side);
-
-                // Limit decimal to only 2 digits
-                right_side = right_side.substring(0, 2);
-
-                // Join number by .
-                input_val = left_side + "." + right_side;
-
-            } else {
-                // No decimal entered
-                // Add commas to number
-                input_val = formatNumber(input_val);
+            function parseNumber(str) {
+                return parseInt(str.replace(/,/g, '')) || 0;
             }
 
-            // Send updated string to input
-            input.val(input_val);
-
-            // Put caret back in the right position
-            var updated_len = input_val.length;
-            caret_pos = updated_len - original_len + caret_pos;
-            input[0].setSelectionRange(caret_pos, caret_pos);
-        }
-
-        // Update price calculation functions
-        function getNumericPrice(input) {
-            return parseFloat(input.val().replace(/,/g, '')) || 0;
-        }
-
-        function updateMotorTotal(row) {
-            const price = getNumericPrice($(row).find('.motor-price'));
-            const quantity = parseInt($(row).find('.motor-quantity').val()) || 1;
-
-            // Enable/disable select button based on price
-            const selectButton = $(row).find('.select-motor');
-            selectButton.prop('disabled', price <= 0);
-        }
-
-        function updateSpareTotal(row) {
-            const price = getNumericPrice($(row).find('.spare-price'));
-            const quantity = parseInt($(row).find('.spare-quantity').val()) || 1;
-
-            // Enable/disable select button based on price
-            const selectButton = $(row).find('.select-spare-part');
-            selectButton.prop('disabled', price <= 0);
-        }
-
-        // Motor event handlers
-        $('.motor-increment').click(function() {
-            const input = $(this).closest('.input-group').find('.motor-quantity');
-            input.val(parseInt(input.val()) + 1);
-            updateMotorTotal($(this).closest('tr'));
-        });
-
-        $('.motor-decrement').click(function() {
-            const input = $(this).closest('.input-group').find('.motor-quantity');
-            if (parseInt(input.val()) > 1) {
-                input.val(parseInt(input.val()) - 1);
-                updateMotorTotal($(this).closest('tr'));
+            function updateTotalPrice() {
+                let total = 0;
+                selectedMotors.forEach(item => {
+                    total += item.quantity * item.price;
+                });
+                selectedSpareParts.forEach(item => {
+                    total += item.quantity * item.price;
+                });
+                $('#total_harga').val(formatNumber(total));
             }
-        });
 
-        $('.motor-price').on('input blur', function() {
-            updateMotorTotal($(this).closest('tr'));
-        });
+            $(document).on('click', '.add-motor', function() {
+                const row = $(this).closest('tr');
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                const quantity = parseInt(row.find('.motor-quantity').val()) || 1;
+                const price = parseNumber(row.find('.motor-price').val());
 
-        // Spare Part event handlers
-        $('.spare-increment').click(function() {
-            const input = $(this).closest('.input-group').find('.spare-quantity');
-            input.val(parseInt(input.val()) + 1);
-            updateSpareTotal($(this).closest('tr'));
-        });
+                if (price <= 0) {
+                    alert('Please enter a valid price for the motor');
+                    return;
+                }
 
-        $('.spare-decrement').click(function() {
-            const input = $(this).closest('.input-group').find('.spare-quantity');
-            if (parseInt(input.val()) > 1) {
-                input.val(parseInt(input.val()) - 1);
-                updateSpareTotal($(this).closest('tr'));
+                if (selectedMotors.has(id)) {
+                    let current = selectedMotors.get(id);
+                    current.quantity += quantity;
+                    selectedMotors.set(id, current);
+                } else {
+                    selectedMotors.set(id, {
+                        id: id,
+                        name: name,
+                        quantity: quantity,
+                        price: price
+                    });
+                }
+
+                updateMotorSelection();
+                $('#motorModal').modal('hide');
+            });
+
+            $(document).on('click', '.add-spare-part', function() {
+                const row = $(this).closest('tr');
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                const quantity = parseInt(row.find('.spare-quantity').val()) || 1;
+                const price = parseNumber(row.find('.spare-price').val());
+
+                if (price <= 0) {
+                    alert('Please enter a valid price for the spare part');
+                    return;
+                }
+
+                if (selectedSpareParts.has(id)) {
+                    let current = selectedSpareParts.get(id);
+                    current.quantity += quantity;
+                    selectedSpareParts.set(id, current);
+                } else {
+                    selectedSpareParts.set(id, {
+                        id: id,
+                        name: name,
+                        quantity: quantity,
+                        price: price
+                    });
+                }
+
+                updateSparePartSelection();
+                $('#sparePartModal').modal('hide');
+            });
+
+            function updateMotorSelection() {
+                const container = $('#motorSelection');
+                container.empty();
+                selectedMotors.forEach((item, id) => {
+                    container.append(createSelectedItemHtml('motor', item));
+                });
+                updateTotalPrice();
             }
-        });
 
-        $('.spare-price').on('input blur', function() {
-            updateSpareTotal($(this).closest('tr'));
-        });
+            function updateSparePartSelection() {
+                const container = $('#sparePartSelection');
+                container.empty();
+                selectedSpareParts.forEach((item, id) => {
+                    container.append(createSelectedItemHtml('spare-part', item));
+                });
+                updateTotalPrice();
+            }
 
-        // Selection handlers
-        $('.select-motor').click(function() {
-            const row = $(this).closest('tr');
-            const id = $(this).data('id');
-            const name = $(this).data('name');
-            const price = getNumericPrice(row.find('.motor-price'));
-            const quantity = parseInt(row.find('.motor-quantity').val());
-            const total = price * quantity;
+            function createSelectedItemHtml(type, item) {
+                return `
+                <div class="selected-item ${type}-item row mb-2">
+                    <input type="hidden" name="${type}_ids[]" value="${item.id}">
+                    <input type="hidden" name="${type}_quantities[]" value="${item.quantity}">
+                    <input type="hidden" name="${type}_prices[]" value="${item.price}">
+                    <div class="col-md-5">${item.name}</div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" value="${item.quantity}" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Rp</span>
+                            </div>
+                            <input type="text" class="form-control" value="${formatNumber(item.price)}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-${type}" data-id="${item.id}">Remove</button>
+                    </div>
+                </div>`;
+            }
 
-            $('#motor_input').val(name);
-            $('#motor_id').val(id);
-            $('#harga').val(price);
-            $('#jumlah').val(quantity);
-            $('#total_harga').val(total);
+            $(document).on('click', '.remove-motor', function() {
+                const id = $(this).data('id');
+                selectedMotors.delete(id);
+                updateMotorSelection();
+            });
 
-            $('#motorModal').modal('hide');
-        });
+            $(document).on('click', '.remove-spare-part', function() {
+                const id = $(this).data('id');
+                selectedSpareParts.delete(id);
+                updateSparePartSelection();
+            });
 
-        $('.select-spare-part').click(function() {
-            const row = $(this).closest('tr');
-            const id = $(this).data('id');
-            const name = $(this).data('name');
-            const price = getNumericPrice(row.find('.spare-price'));
-            const quantity = parseInt(row.find('.spare-quantity').val());
-            const total = price * quantity;
+            $('form').off('submit').on('submit', function(e) {
+                e.preventDefault();
 
-            $('#spare_part_input').val(name);
-            $('#spare_part_id').val(id);
-            $('#harga').val(price);
-            $('#jumlah').val(quantity);
-            $('#total_harga').val(total);
+                if (isSubmitting) return; // Prevent double submission
 
-            $('#sparePartModal').modal('hide');
+                const submitButton = $(this).find('button[type="submit"]');
+                submitButton.prop('disabled', true);
+                isSubmitting = true;
+
+                const poId = $('#purchase_order_id').val();
+                if (!poId) {
+                    alert('Please select a Purchase Order');
+                    submitButton.prop('disabled', false);
+                    isSubmitting = false;
+                    return;
+                }
+
+                if (selectedMotors.size === 0 && selectedSpareParts.size === 0) {
+                    alert('Please select at least one motor or spare part');
+                    submitButton.prop('disabled', false);
+                    isSubmitting = false;
+                    return;
+                }
+
+                const formData = new FormData(this);
+                selectedMotors.forEach((item, id) => {
+                    formData.append('motor_ids[]', id);
+                    formData.append('motor_quantities[]', item.quantity);
+                    formData.append('motor_prices[]', item.price);
+                });
+
+                selectedSpareParts.forEach((item, id) => {
+                    formData.append('spare_part_ids[]', id);
+                    formData.append('spare_part_quantities[]', item.quantity);
+                    formData.append('spare_part_prices[]', item.price);
+                });
+
+                formData.append('total_harga', parseNumber($('#total_harga').val()));
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Data berhasil disimpan!');
+                            window.location.href = response.redirect ||
+                                '/purchase_orders_details';
+                        } else {
+                            alert(response.message || 'Error saving purchase order details');
+                        }
+                    },
+                    error: function(xhr) {
+                        const response = xhr.responseJSON;
+                        alert(response?.message ||
+                            'Error saving purchase order details. Please try again.');
+                    },
+                    complete: function() {
+                        submitButton.prop('disabled', false);
+                        isSubmitting = false;
+                    }
+                });
+            });
+
+            $(document).on('input', '.price-input', function() {
+                let value = $(this).val().replace(/[^0-9]/g, '');
+                $(this).val(formatNumber(value));
+            });
         });
     </script>
-@endsection
+@endpush
