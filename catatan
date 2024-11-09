@@ -1,0 +1,5 @@
+PO details
+- belum ditambahkan fitur apabila PO sudah dalam status complete dan cencelled aka PO details tidak akan bisa melakukan akses ke pada invoice tersebut
+
+PO
+- belum ditambahkan fitur apabila PO sudah dalam status complete maka akan dikirim kan menuju stock dan stock in

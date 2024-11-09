@@ -16,19 +16,20 @@ return new class extends Migration
             $table->unsignedBigInteger('purchase_order_id');
             $table->unsignedBigInteger('motor_id')->nullable();
             $table->unsignedBigInteger('spare_part_id')->nullable();
+            $table->string('warna_id')->nullable();
             $table->integer('jumlah'); // Mengganti quantity menjadi jumlah
             $table->decimal('harga', 15, 2)->nullable();
-            $table->decimal('total_harga', 15, 2); // Menambahkan kolom total_harga
-            $table->string('invoice')->nullable(); // Menambahkan kolom invoice jika belum ada
+            $table->decimal('total_harga', 15, 2);
+            $table->string('invoice')->nullable();
             $table->string('status')->default('active');
             $table->integer('order')->default(0);
             $table->timestamps();
-        
+
             $table->foreign('purchase_order_id')->references('id')->on('purchase_orders')->onDelete('cascade');
             $table->foreign('motor_id')->references('id')->on('master_motors')->onDelete('set null');
             $table->foreign('spare_part_id')->references('id')->on('master_spare_parts')->onDelete('set null');
+            $table->foreign('warna_id')->references('id')->on('master_warnas')->onDelete('set null');
         });
-             
     }
 
     /**

@@ -23,7 +23,7 @@
         }
 
         .quantity-input {
-            width: 60px !important;
+            width: 80px !important;
             text-align: center;
         }
 
@@ -36,8 +36,40 @@
             text-align: right;
         }
 
+        .form-control {
+            height: calc(1.5em + .75rem + 2px);
+        }
+
         .modal-lg {
-            max-width: 1000px;
+            max-width: 1200px;
+        }
+
+        .modal-dialog {
+            display: flex;
+            align-items: center;
+            min-height: calc(100% - 1rem);
+        }
+
+        @media (min-width: 576px) {
+            .modal-dialog {
+                min-height: calc(100% - 3.5rem);
+            }
+        }
+
+        .modal-content {
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal {
+            overflow-y: auto;
+        }
+
+        @media (min-width: 992px) {
+            .modal-lg {
+                max-width: 80%;
+            }
         }
 
         .table-responsive {
@@ -47,6 +79,10 @@
 
         .selected-items {
             margin-bottom: 20px;
+        }
+
+        .selected-item .btn {
+            margin-right: 5px;
         }
     </style>
 
@@ -76,7 +112,6 @@
                                 @enderror
                             </div>
 
-                            <!-- Motor and Spare Part Selection with Modals -->
                             <div class="form-group">
                                 <label for="motor_id">Motors</label>
                                 <div class="input-group mb-3">
@@ -103,7 +138,6 @@
                                 <div id="sparePartSelection"></div>
                             </div>
 
-                            <!-- Total Harga -->
                             <div class="form-group">
                                 <label for="total_harga">Total Harga</label>
                                 <div class="input-group">
@@ -124,50 +158,70 @@
         </section>
     </div>
 
-    <!-- Motor and Spare Part Modals -->
-
     <!-- Motor Modal -->
     <div class="modal fade" id="motorModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Select Motor</h5>
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                    <div class="table-responsive" style="max-height: 60vh;">
+                        <table class="table table-bordered table-striped table-sm">
                             <thead>
                                 <tr>
+                                    <th class="text-center" style="width: 5%"><input type="checkbox" id="selectAllMotors">
+                                    </th>
                                     <th class="text-center" style="width: 5%">No</th>
                                     <th class="text-center" style="width: 20%">Name</th>
-                                    <th class="text-center" style="width: 20%">Quantity</th>
-                                    <th class="text-center" style="width: 25%">Price</th>
+                                    <th class="text-center" style="width: 15%">Color</th>
+                                    <th class="text-center" style="width: 15%">Quantity</th>
+                                    <th class="text-center" style="width: 20%">Price</th>
                                     <th class="text-center" style="width: 15%">Total</th>
-                                    <th class="text-center" style="width: 15%">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($motors as $index => $motor)
                                     <tr>
+                                        <td class="text-center"><input type="checkbox" class="motor-checkbox"
+                                                data-id="{{ $motor->id }}"></td>
                                         <td class="text-center">{{ $index + 1 }}</td>
                                         <td>{{ $motor->nama_motor }}</td>
-                                        <td><input type="number" class="form-control motor-quantity quantity-input"
-                                                value="1" min="1"></td>
-                                        <td><input type="text" class="form-control motor-price price-input"
-                                                placeholder="0" data-type="currency"></td>
-                                        <td class="total-column motor-total">Rp 0</td>
-                                        <td class="text-center">
-                                            <button class="btn btn-primary add-motor" data-id="{{ $motor->id }}"
-                                                data-name="{{ $motor->nama_motor }}">
-                                                <i class="fas fa-check"></i> Add
-                                            </button>
+                                        <td>
+                                            <select class="form-control motor-color">
+                                                @foreach ($masterWarna as $warna)
+                                                    <option value="{{ $warna->id }}">{{ $warna->nama_warna }}</option>
+                                                @endforeach
+                                            </select>
                                         </td>
+                                        <td>
+                                            <div class="d-flex justify-content-center">
+                                                <input type="number"
+                                                    class="form-control motor-quantity quantity-input text-center"
+                                                    value="1" min="1" style="width: 80px;">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">Rp</span>
+                                                </div>
+                                                <input type="text"
+                                                    class="form-control motor-price price-input text-right"
+                                                    placeholder="0" data-type="currency">
+                                            </div>
+                                        </td>
+                                        <td class="total-column motor-total text-right">Rp 0</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="addSelectedMotors">Add Selected Motors</button>
                 </div>
             </div>
         </div>
@@ -175,46 +229,61 @@
 
     <!-- Spare Part Modal -->
     <div class="modal fade" id="sparePartModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Select Spare Part</h5>
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
+                    <div class="table-responsive" style="max-height: 60vh;">
+                        <table class="table table-bordered table-striped table-sm">
                             <thead>
                                 <tr>
+                                    <th class="text-center" style="width: 5%"><input type="checkbox"
+                                            id="selectAllSpareParts"></th>
                                     <th class="text-center" style="width: 5%">No</th>
-                                    <th class="text-center" style="width: 20%">Name</th>
-                                    <th class="text-center" style="width: 20%">Quantity</th>
+                                    <th class="text-center" style="width: 25%">Name</th>
+                                    <th class="text-center" style="width: 15%">Quantity</th>
                                     <th class="text-center" style="width: 25%">Price</th>
-                                    <th class="text-center" style="width: 15%">Total</th>
-                                    <th class="text-center" style="width: 15%">Action</th>
+                                    <th class="text-center" style="width: 20%">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($spareParts as $index => $sparePart)
                                     <tr>
+                                        <td class="text-center"><input type="checkbox" class="spare-part-checkbox"
+                                                data-id="{{ $sparePart->id }}"></td>
                                         <td class="text-center">{{ $index + 1 }}</td>
                                         <td>{{ $sparePart->nama_spare_part }}</td>
-                                        <td><input type="number" class="form-control spare-quantity quantity-input"
-                                                value="1" min="1"></td>
-                                        <td><input type="text" class="form-control spare-price price-input"
-                                                placeholder="0" data-type="currency"></td>
-                                        <td class="total-column spare-total">Rp 0</td>
-                                        <td class="text-center">
-                                            <button class="btn btn-primary add-spare-part" data-id="{{ $sparePart->id }}"
-                                                data-name="{{ $sparePart->nama_spare_part }}">
-                                                <i class="fas fa-check"></i> Add
-                                            </button>
+                                        <td>
+                                            <div class="d-flex justify-content-center">
+                                                <input type="number"
+                                                    class="form-control spare-quantity quantity-input text-center"
+                                                    value="1" min="1" style="width: 80px;">
+                                            </div>
                                         </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">Rp</span>
+                                                </div>
+                                                <input type="text"
+                                                    class="form-control spare-price price-input text-right"
+                                                    placeholder="0" data-type="currency">
+                                            </div>
+                                        </td>
+                                        <td class="total-column spare-total text-right">Rp 0</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="addSelectedSpareParts">Add Selected Spare
+                        Parts</button>
                 </div>
             </div>
         </div>
@@ -222,11 +291,12 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
     <script>
         $(document).ready(function() {
             let selectedMotors = new Map();
             let selectedSpareParts = new Map();
-            let isSubmitting = false; // Variable to lock form submission
+            let isSubmitting = false;
 
             function formatNumber(n) {
                 return n.toString().replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -247,59 +317,71 @@
                 $('#total_harga').val(formatNumber(total));
             }
 
-            $(document).on('click', '.add-motor', function() {
-                const row = $(this).closest('tr');
-                const id = $(this).data('id');
-                const name = $(this).data('name');
-                const quantity = parseInt(row.find('.motor-quantity').val()) || 1;
-                const price = parseNumber(row.find('.motor-price').val());
+            $('#selectAllMotors').on('change', function() {
+                $('.motor-checkbox').prop('checked', $(this).is(':checked'));
+            });
 
-                if (price <= 0) {
-                    alert('Please enter a valid price for the motor');
-                    return;
-                }
+            $('#selectAllSpareParts').on('change', function() {
+                $('.spare-part-checkbox').prop('checked', $(this).is(':checked'));
+            });
 
-                if (selectedMotors.has(id)) {
-                    let current = selectedMotors.get(id);
-                    current.quantity += quantity;
-                    selectedMotors.set(id, current);
-                } else {
+            $('#addSelectedMotors').on('click', function() {
+                $('.motor-checkbox:checked').each(function() {
+                    const row = $(this).closest('tr');
+                    const id = $(this).data('id');
+                    const name = row.find('td:eq(2)').text();
+                    const quantity = parseInt(row.find('.motor-quantity').val()) || 1;
+                    const price = parseNumber(row.find('.motor-price').val());
+                    const colorId = row.find('.motor-color').val();
+                    const colorName = row.find('.motor-color option:selected').text();
+
+                    if (price <= 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: `Please enter a valid price for the motor: ${name}`
+                        });
+                        return;
+                    }
+
                     selectedMotors.set(id, {
                         id: id,
                         name: name,
                         quantity: quantity,
-                        price: price
+                        price: price,
+                        colorId: colorId,
+                        colorName: colorName
                     });
-                }
+                });
 
                 updateMotorSelection();
                 $('#motorModal').modal('hide');
             });
 
-            $(document).on('click', '.add-spare-part', function() {
-                const row = $(this).closest('tr');
-                const id = $(this).data('id');
-                const name = $(this).data('name');
-                const quantity = parseInt(row.find('.spare-quantity').val()) || 1;
-                const price = parseNumber(row.find('.spare-price').val());
+            $('#addSelectedSpareParts').on('click', function() {
+                $('.spare-part-checkbox:checked').each(function() {
+                    const row = $(this).closest('tr');
+                    const id = $(this).data('id');
+                    const name = row.find('td:eq(2)').text();
+                    const quantity = parseInt(row.find('.spare-quantity').val()) || 1;
+                    const price = parseNumber(row.find('.spare-price').val());
 
-                if (price <= 0) {
-                    alert('Please enter a valid price for the spare part');
-                    return;
-                }
+                    if (price <= 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: `Please enter a valid price for the spare part: ${name}`
+                        });
+                        return;
+                    }
 
-                if (selectedSpareParts.has(id)) {
-                    let current = selectedSpareParts.get(id);
-                    current.quantity += quantity;
-                    selectedSpareParts.set(id, current);
-                } else {
                     selectedSpareParts.set(id, {
                         id: id,
                         name: name,
                         quantity: quantity,
                         price: price
                     });
-                }
+                });
 
                 updateSparePartSelection();
                 $('#sparePartModal').modal('hide');
@@ -324,116 +406,273 @@
             }
 
             function createSelectedItemHtml(type, item) {
+                let colorHtml = '';
+                if (type === 'motor') {
+                    colorHtml = `<div class="col-md-2">${item.colorName}</div>`;
+                }
                 return `
                 <div class="selected-item ${type}-item row mb-2">
                     <input type="hidden" name="${type}_ids[]" value="${item.id}">
                     <input type="hidden" name="${type}_quantities[]" value="${item.quantity}">
                     <input type="hidden" name="${type}_prices[]" value="${item.price}">
-                    <div class="col-md-5">${item.name}</div>
+                    ${type === 'motor' ? `<input type="hidden" name="${type}_warna_ids[]" value="${item.colorId}">` : ''}
+                    <div class="col-md-3">${item.name}</div>
+                    ${colorHtml}
                     <div class="col-md-2">
-                        <input type="number" class="form-control" value="${item.quantity}" readonly>
+                        <input type="number" class="form-control ${type}-quantity" value="${item.quantity}" min="1">
                     </div>
                     <div class="col-md-3">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Rp</span>
                             </div>
-                            <input type="text" class="form-control" value="${formatNumber(item.price)}" readonly>
+                            <input type="text" class="form-control ${type}-price" value="${formatNumber(item.price)}">
                         </div>
                     </div>
                     <div class="col-md-2">
+                        <button type="button" class="btn btn-primary btn-sm edit-${type}" data-id="${item.id}">Edit</button>
                         <button type="button" class="btn btn-danger btn-sm remove-${type}" data-id="${item.id}">Remove</button>
                     </div>
                 </div>`;
             }
 
-            $(document).on('click', '.remove-motor', function() {
+            $(document).on('click', '.remove-motor, .remove-spare-part', function() {
                 const id = $(this).data('id');
-                selectedMotors.delete(id);
-                updateMotorSelection();
+                const type = $(this).hasClass('remove-motor') ? 'motor' : 'spare part';
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to remove this ${type}`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, remove it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if ($(this).hasClass('remove-motor')) {
+                            selectedMotors.delete(id);
+                            updateMotorSelection();
+                        } else {
+                            selectedSpareParts.delete(id);
+                            updateSparePartSelection();
+                        }
+                        Swal.fire(
+                            'Removed!',
+                            `The ${type} has been removed.`,
+                            'success'
+                        )
+                    }
+                })
             });
 
-            $(document).on('click', '.remove-spare-part', function() {
+            $(document).on('click', '.edit-motor, .edit-spare-part', function() {
                 const id = $(this).data('id');
-                selectedSpareParts.delete(id);
-                updateSparePartSelection();
+                const type = $(this).hasClass('edit-motor') ? 'motor' : 'spare-part';
+                const item = type === 'motor' ? selectedMotors.get(id) : selectedSpareParts.get(id);
+                const itemContainer = $(this).closest('.selected-item');
+
+                Swal.fire({
+                    title: 'Edit ' + (type === 'motor' ? 'Motor' : 'Spare Part'),
+                    html: `<input id="edit-quantity" class="swal2-input" type="number" value="${item.quantity}" min="1">` +
+                        `<input id="edit-price" class="swal2-input" type="text" value="${formatNumber(item.price)}">`,
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const newQuantity = parseInt(document.getElementById('edit-quantity')
+                            .value);
+                        const newPrice = parseNumber(document.getElementById('edit-price')
+                            .value);
+                        return {
+                            quantity: newQuantity,
+                            price: newPrice
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const {
+                            quantity,
+                            price
+                        } = result.value;
+                        if (quantity > 0 && price > 0) {
+                            item.quantity = quantity;
+                            item.price = price;
+                            if (type === 'motor') {
+                                selectedMotors.set(id, item);
+                            } else {
+                                selectedSpareParts.set(id, item);
+                            }
+                            itemContainer.find(`.${type}-quantity`).val(quantity);
+                            itemContainer.find(`.${type}-price`).val(formatNumber(price));
+                            itemContainer.find(`input[name="${type}_quantities[]"]`).val(quantity);
+                            itemContainer.find(`input[name="${type}_prices[]"]`).val(price);
+                            updateTotalPrice();
+                        } else {
+                            Swal.fire('Error', 'Invalid quantity or price', 'error');
+                        }
+                    }
+                });
             });
 
             $('form').off('submit').on('submit', function(e) {
                 e.preventDefault();
 
-                if (isSubmitting) return; // Prevent double submission
-
-                const submitButton = $(this).find('button[type="submit"]');
-                submitButton.prop('disabled', true);
-                isSubmitting = true;
+                if (isSubmitting) return;
 
                 const poId = $('#purchase_order_id').val();
                 if (!poId) {
-                    alert('Please select a Purchase Order');
-                    submitButton.prop('disabled', false);
-                    isSubmitting = false;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Silakan pilih Purchase Order'
+                    });
                     return;
                 }
 
                 if (selectedMotors.size === 0 && selectedSpareParts.size === 0) {
-                    alert('Please select at least one motor or spare part');
-                    submitButton.prop('disabled', false);
-                    isSubmitting = false;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Silakan pilih setidaknya satu motor atau spare part'
+                    });
                     return;
                 }
 
-                const formData = new FormData();
-                formData.append('purchase_order_id', poId);
-                
-                selectedMotors.forEach((item, id) => {
-                    formData.append('motor_ids[]', id);
-                    formData.append('motor_quantities[]', item.quantity);
-                    formData.append('motor_prices[]', item.price);
-                });
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Anda akan menyimpan data ini!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, simpan!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const submitButton = $(this).find('button[type="submit"]');
+                        submitButton.prop('disabled', true);
+                        isSubmitting = true;
 
-                selectedSpareParts.forEach((item, id) => {
-                    formData.append('spare_part_ids[]', id);
-                    formData.append('spare_part_quantities[]', item.quantity);
-                    formData.append('spare_part_prices[]', item.price);
-                });
+                        const formData = new FormData();
+                        formData.append('purchase_order_id', poId);
 
-                formData.append('total_harga', parseNumber($('#total_harga').val()));
+                        selectedMotors.forEach((item, id) => {
+                            formData.append('motor_ids[]', id);
+                            formData.append('motor_quantities[]', item.quantity);
+                            formData.append('motor_prices[]', item.price);
+                            formData.append('motor_warna_ids[]', item.colorId);
+                        });
 
-                $.ajax({
-                    url: $(this).attr('action'),
-                    method: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            alert('Data berhasil disimpan!');
-                            window.location.href = response.redirect ||
-                                '/purchase_orders_details';
-                        } else {
-                            alert(response.message || 'Error saving purchase order details');
-                        }
-                    },
-                    error: function(xhr) {
-                        const response = xhr.responseJSON;
-                        alert(response?.message ||
-                            'Error saving purchase order details. Please try again.');
-                    },
-                    complete: function() {
-                        submitButton.prop('disabled', false);
-                        isSubmitting = false;
+                        selectedSpareParts.forEach((item, id) => {
+                            formData.append('spare_part_ids[]', id);
+                            formData.append('spare_part_quantities[]', item.quantity);
+                            formData.append('spare_part_prices[]', item.price);
+                        });
+
+                        formData.append('total_harga', parseNumber($('#total_harga').val()));
+
+                        $.ajax({
+                            url: $(this).attr('action'),
+                            method: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil!',
+                                        text: 'Data berhasil disimpan!',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    }).then(() => {
+                                        window.location.href = response
+                                            .redirect ||
+                                            '/purchase_orders_details';
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Oops...',
+                                        text: response.message ||
+                                            'Error saving purchase order details'
+                                    });
+                                }
+                            },
+                            error: function(xhr) {
+                                const response = xhr.responseJSON;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: response?.message ||
+                                        'Error saving purchase order details. Please try again.'
+                                });
+                            },
+                            complete: function() {
+                                submitButton.prop('disabled', false);
+                                isSubmitting = false;
+                            }
+                        });
                     }
                 });
             });
-
             $(document).on('input', '.price-input', function() {
                 let value = $(this).val().replace(/[^0-9]/g, '');
                 $(this).val(formatNumber(value));
             });
+
+            $(document).on('input', '.motor-quantity, .motor-price, .spare-quantity, .spare-price', function() {
+                const row = $(this).closest('tr');
+                const quantity = parseInt(row.find('.motor-quantity, .spare-quantity').val()) || 0;
+                const price = parseNumber(row.find('.motor-price, .spare-price').val());
+                const total = quantity * price;
+                row.find('.motor-total, .spare-total').text('Rp ' + formatNumber(total));
+            });
+
+            // Update total when editing selected items
+            $(document).on('input',
+                '.selected-item .motor-quantity, .selected-item .motor-price, .selected-item .spare-quantity, .selected-item .spare-price',
+                function() {
+                    const item = $(this).closest('.selected-item');
+                    const id = item.find('button').data('id');
+                    const type = item.hasClass('motor-item') ? 'motor' : 'spare-part';
+                    const quantity = parseInt(item.find(`.${type}-quantity`).val()) || 0;
+                    const price = parseNumber(item.find(`.${type}-price`).val());
+
+                    if (type === 'motor') {
+                        const motorItem = selectedMotors.get(id);
+                        motorItem.quantity = quantity;
+                        motorItem.price = price;
+                        selectedMotors.set(id, motorItem);
+                    } else {
+                        const sparePartItem = selectedSpareParts.get(id);
+                        sparePartItem.quantity = quantity;
+                        sparePartItem.price = price;
+                        selectedSpareParts.set(id, sparePartItem);
+                    }
+
+                    item.find(`input[name="${type}_quantities[]"]`).val(quantity);
+                    item.find(`input[name="${type}_prices[]"]`).val(price);
+
+                    updateTotalPrice();
+                });
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Initialize select2 for purchase order selection
+            $('#purchase_order_id').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select Purchase Order'
+            });
+
+            // Initialize datepicker if needed
+            // $('.datepicker').datepicker({
+            //     format: 'yyyy-mm-dd',
+            //     autoclose: true
+            // });
         });
     </script>
 @endpush

@@ -60,8 +60,8 @@
                                         <form action="{{ route('purchase_orders_details.cancel', ['id' => $detail->id]) }}" method="POST" style="display: inline;">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this order detail?');">Cancel</button>
-                                        </form>                                        
+                                            <button type="submit" class="btn btn-danger cancel-btn" data-invoice="{{ $detail->invoice }}">Cancel</button>
+                                        </form>                                       
                                         
                                         <form action="{{ route('purchase_orders_details.delete', ['id' => $detail->id]) }}" method="POST" style="display: inline-block;">
                                             @csrf
@@ -115,4 +115,20 @@
             </div>
         </section>
     </div>
+@endsection
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelButtons = document.querySelectorAll('.cancel-btn');
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const invoice = this.getAttribute('data-invoice');
+            if (confirm(`Are you sure you want to cancel all order details with invoice ${invoice}?`)) {
+                this.closest('form').submit();
+            }
+        });
+    });
+});
+</script>
 @endsection

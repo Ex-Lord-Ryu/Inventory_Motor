@@ -12,7 +12,7 @@ class PurchaseOrdersDetails extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'purchase_order_id', // sesuaikan dengan nama kolom di database
+        'purchase_order_id',
         'invoice',
         'motor_id',
         'spare_part_id',
@@ -20,7 +20,8 @@ class PurchaseOrdersDetails extends Model
         'harga',
         'total_harga',
         'order',
-        'status', // jika ada kolom status
+        'status',
+        'warna_id',
     ];
     
 
@@ -46,4 +47,10 @@ class PurchaseOrdersDetails extends Model
     {
         return $this->belongsTo(MasterSparePart::class, 'spare_part_id');
     }
+
+    public function warna()
+    {
+        return $this->belongsTo(MasterWarna::class, 'warna_id');
+    }
+
 }
