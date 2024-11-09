@@ -344,14 +344,22 @@
                         return;
                     }
 
-                    selectedMotors.set(id, {
-                        id: id,
-                        name: name,
-                        quantity: quantity,
-                        price: price,
-                        colorId: colorId,
-                        colorName: colorName
-                    });
+                    const uniqueKey = `${id}-${colorId}`;
+
+                    if (!selectedMotors.has(uniqueKey)) {
+                        selectedMotors.set(uniqueKey, {
+                            id: id,
+                            name: name,
+                            quantity: quantity,
+                            price: price,
+                            colorId: colorId,
+                            colorName: colorName
+                        });
+                    } else {
+                        const existingItem = selectedMotors.get(uniqueKey);
+                        existingItem.quantity += quantity;
+                        selectedMotors.set(uniqueKey, existingItem);
+                    }
                 });
 
                 updateMotorSelection();
@@ -390,7 +398,7 @@
             function updateMotorSelection() {
                 const container = $('#motorSelection');
                 container.empty();
-                selectedMotors.forEach((item, id) => {
+                selectedMotors.forEach((item, key) => {
                     container.append(createSelectedItemHtml('motor', item));
                 });
                 updateTotalPrice();
@@ -406,43 +414,65 @@
             }
 
             function createSelectedItemHtml(type, item) {
-                let colorHtml = '';
                 if (type === 'motor') {
-                    colorHtml = `<div class="col-md-2">${item.colorName}</div>`;
-                }
-                return `
-                <div class="selected-item ${type}-item row mb-2">
-                    <input type="hidden" name="${type}_ids[]" value="${item.id}">
-                    <input type="hidden" name="${type}_quantities[]" value="${item.quantity}">
-                    <input type="hidden" name="${type}_prices[]" value="${item.price}">
-                    ${type === 'motor' ? `<input type="hidden" name="${type}_warna_ids[]" value="${item.colorId}">` : ''}
-                    <div class="col-md-3">${item.name}</div>
-                    ${colorHtml}
-                    <div class="col-md-2">
-                        <input type="number" class="form-control ${type}-quantity" value="${item.quantity}" min="1">
-                    </div>
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Rp</span>
-                            </div>
-                            <input type="text" class="form-control ${type}-price" value="${formatNumber(item.price)}">
+                    return `
+            <div class="selected-item ${type}-item row mb-2">
+                <input type="hidden" name="${type}_ids[]" value="${item.id}">
+                <input type="hidden" name="${type}_quantities[]" value="${item.quantity}">
+                <input type="hidden" name="${type}_prices[]" value="${item.price}">
+                <input type="hidden" name="${type}_warna_ids[]" value="${item.colorId}">
+                <div class="col-md-3">${item.name}</div>
+                <div class="col-md-2">${item.colorName}</div>
+                <div class="col-md-2">
+                    <input type="number" class="form-control ${type}-quantity" value="${item.quantity}" min="1">
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Rp</span>
                         </div>
+                        <input type="text" class="form-control ${type}-price" value="${formatNumber(item.price)}">
                     </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-primary btn-sm edit-${type}" data-id="${item.id}">Edit</button>
-                        <button type="button" class="btn btn-danger btn-sm remove-${type}" data-id="${item.id}">Remove</button>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-primary btn-sm edit-${type}" data-id="${item.id}" data-color-id="${item.colorId}">Edit</button>
+                    <button type="button" class="btn btn-danger btn-sm remove-${type}" data-id="${item.id}" data-color-id="${item.colorId}">Remove</button>
+                </div>
+            </div>`;
+                } else {
+                    return `
+            <div class="selected-item ${type}-item row mb-2">
+                <input type="hidden" name="${type}_ids[]" value="${item.id}">
+                <input type="hidden" name="${type}_quantities[]" value="${item.quantity}">
+                <input type="hidden" name="${type}_prices[]" value="${item.price}">
+                <div class="col-md-4">${item.name}</div>
+                <div class="col-md-2">
+                    <input type="number" class="form-control ${type}-quantity" value="${item.quantity}" min="1">
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Rp</span>
+                        </div>
+                        <input type="text" class="form-control ${type}-price" value="${formatNumber(item.price)}">
                     </div>
-                </div>`;
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-primary btn-sm edit-${type}" data-id="${item.id}">Edit</button>
+                    <button type="button" class="btn btn-danger btn-sm remove-${type}" data-id="${item.id}">Remove</button>
+                </div>
+            </div>`;
+                }
             }
 
-            $(document).on('click', '.remove-motor, .remove-spare-part', function() {
+            $(document).on('click', '.remove-motor', function() {
                 const id = $(this).data('id');
-                const type = $(this).hasClass('remove-motor') ? 'motor' : 'spare part';
+                const colorId = $(this).data('color-id');
+                const uniqueKey = `${id}-${colorId}`;
 
                 Swal.fire({
                     title: 'Are you sure?',
-                    text: `You are about to remove this ${type}`,
+                    text: `You are about to remove this motor`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
@@ -450,30 +480,50 @@
                     confirmButtonText: 'Yes, remove it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        if ($(this).hasClass('remove-motor')) {
-                            selectedMotors.delete(id);
-                            updateMotorSelection();
-                        } else {
-                            selectedSpareParts.delete(id);
-                            updateSparePartSelection();
-                        }
+                        selectedMotors.delete(uniqueKey);
+                        updateMotorSelection();
                         Swal.fire(
                             'Removed!',
-                            `The ${type} has been removed.`,
+                            `The motor has been removed.`,
                             'success'
                         )
                     }
                 })
             });
 
-            $(document).on('click', '.edit-motor, .edit-spare-part', function() {
+            $(document).on('click', '.remove-spare-part', function() {
                 const id = $(this).data('id');
-                const type = $(this).hasClass('edit-motor') ? 'motor' : 'spare-part';
-                const item = type === 'motor' ? selectedMotors.get(id) : selectedSpareParts.get(id);
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to remove this spare part`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, remove it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        selectedSpareParts.delete(id);
+                        updateSparePartSelection();
+                        Swal.fire(
+                            'Removed!',
+                            `The spare part has been removed.`,
+                            'success'
+                        )
+                    }
+                })
+            });
+
+            $(document).on('click', '.edit-motor', function() {
+                const id = $(this).data('id');
+                const colorId = $(this).data('color-id');
+                const uniqueKey = `${id}-${colorId}`;
+                const item = selectedMotors.get(uniqueKey);
                 const itemContainer = $(this).closest('.selected-item');
 
                 Swal.fire({
-                    title: 'Edit ' + (type === 'motor' ? 'Motor' : 'Spare Part'),
+                    title: 'Edit Motor',
                     html: `<input id="edit-quantity" class="swal2-input" type="number" value="${item.quantity}" min="1">` +
                         `<input id="edit-price" class="swal2-input" type="text" value="${formatNumber(item.price)}">`,
                     focusConfirm: false,
@@ -496,15 +546,54 @@
                         if (quantity > 0 && price > 0) {
                             item.quantity = quantity;
                             item.price = price;
-                            if (type === 'motor') {
-                                selectedMotors.set(id, item);
-                            } else {
-                                selectedSpareParts.set(id, item);
-                            }
-                            itemContainer.find(`.${type}-quantity`).val(quantity);
-                            itemContainer.find(`.${type}-price`).val(formatNumber(price));
-                            itemContainer.find(`input[name="${type}_quantities[]"]`).val(quantity);
-                            itemContainer.find(`input[name="${type}_prices[]"]`).val(price);
+                            selectedMotors.set(uniqueKey, item);
+                            itemContainer.find(`.motor-quantity`).val(quantity);
+                            itemContainer.find(`.motor-price`).val(formatNumber(price));
+                            itemContainer.find(`input[name="motor_quantities[]"]`).val(quantity);
+                            itemContainer.find(`input[name="motor_prices[]"]`).val(price);
+                            updateTotalPrice();
+                        } else {
+                            Swal.fire('Error', 'Invalid quantity or price', 'error');
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.edit-spare-part', function() {
+                const id = $(this).data('id');
+                const item = selectedSpareParts.get(id);
+                const itemContainer = $(this).closest('.selected-item');
+
+                Swal.fire({
+                    title: 'Edit Spare Part',
+                    html: `<input id="edit-quantity" class="swal2-input" type="number" value="${item.quantity}" min="1">` +
+                        `<input id="edit-price" class="swal2-input" type="text" value="${formatNumber(item.price)}">`,
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const newQuantity = parseInt(document.getElementById('edit-quantity')
+                            .value);
+                        const newPrice = parseNumber(document.getElementById('edit-price')
+                            .value);
+                        return {
+                            quantity: newQuantity,
+                            price: newPrice
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const {
+                            quantity,
+                            price
+                        } = result.value;
+                        if (quantity > 0 && price > 0) {
+                            item.quantity = quantity;
+                            item.price = price;
+                            selectedSpareParts.set(id, item);
+                            itemContainer.find(`.spare-quantity`).val(quantity);
+                            itemContainer.find(`.spare-price`).val(formatNumber(price));
+                            itemContainer.find(`input[name="spare_part_quantities[]"]`).val(
+                                quantity);
+                            itemContainer.find(`input[name="spare_part_prices[]"]`).val(price);
                             updateTotalPrice();
                         } else {
                             Swal.fire('Error', 'Invalid quantity or price', 'error');
@@ -555,8 +644,8 @@
                         const formData = new FormData();
                         formData.append('purchase_order_id', poId);
 
-                        selectedMotors.forEach((item, id) => {
-                            formData.append('motor_ids[]', id);
+                        selectedMotors.forEach((item, key) => {
+                            formData.append('motor_ids[]', item.id);
                             formData.append('motor_quantities[]', item.quantity);
                             formData.append('motor_prices[]', item.price);
                             formData.append('motor_warna_ids[]', item.colorId);
@@ -589,25 +678,23 @@
                                         timer: 1500
                                     }).then(() => {
                                         window.location.href = response
-                                            .redirect ||
-                                            '/purchase_orders_details';
+                                        .redirect;
                                     });
                                 } else {
                                     Swal.fire({
                                         icon: 'error',
                                         title: 'Oops...',
                                         text: response.message ||
-                                            'Error saving purchase order details'
+                                            'Terjadi kesalahan saat menyimpan data'
                                     });
                                 }
                             },
                             error: function(xhr) {
-                                const response = xhr.responseJSON;
+                                console.error(xhr.responseText);
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Oops...',
-                                    text: response?.message ||
-                                        'Error saving purchase order details. Please try again.'
+                                    text: 'Terjadi kesalahan saat menyimpan data'
                                 });
                             },
                             complete: function() {
@@ -618,6 +705,7 @@
                     }
                 });
             });
+
             $(document).on('input', '.price-input', function() {
                 let value = $(this).val().replace(/[^0-9]/g, '');
                 $(this).val(formatNumber(value));
@@ -631,21 +719,22 @@
                 row.find('.motor-total, .spare-total').text('Rp ' + formatNumber(total));
             });
 
-            // Update total when editing selected items
             $(document).on('input',
                 '.selected-item .motor-quantity, .selected-item .motor-price, .selected-item .spare-quantity, .selected-item .spare-price',
                 function() {
                     const item = $(this).closest('.selected-item');
                     const id = item.find('button').data('id');
+                    const colorId = item.find('button').data('color-id');
                     const type = item.hasClass('motor-item') ? 'motor' : 'spare-part';
                     const quantity = parseInt(item.find(`.${type}-quantity`).val()) || 0;
                     const price = parseNumber(item.find(`.${type}-price`).val());
 
                     if (type === 'motor') {
-                        const motorItem = selectedMotors.get(id);
+                        const uniqueKey = `${id}-${colorId}`;
+                        const motorItem = selectedMotors.get(uniqueKey);
                         motorItem.quantity = quantity;
                         motorItem.price = price;
-                        selectedMotors.set(id, motorItem);
+                        selectedMotors.set(uniqueKey, motorItem);
                     } else {
                         const sparePartItem = selectedSpareParts.get(id);
                         sparePartItem.quantity = quantity;
@@ -659,20 +748,42 @@
                     updateTotalPrice();
                 });
 
-            // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();
 
-            // Initialize select2 for purchase order selection
-            $('#purchase_order_id').select2({
-                theme: 'bootstrap4',
-                placeholder: 'Select Purchase Order'
+            $('.motor-color').on('change', function() {
+                const row = $(this).closest('tr');
+                const motorId = row.find('.motor-checkbox').data('id');
+                const colorId = $(this).val();
+                const colorName = $(this).find('option:selected').text();
+
+                row.find('.motor-checkbox').data('color-id', colorId);
+                row.find('.motor-checkbox').data('color-name', colorName);
             });
 
-            // Initialize datepicker if needed
-            // $('.datepicker').datepicker({
-            //     format: 'yyyy-mm-dd',
-            //     autoclose: true
-            // });
+            $('#purchase_order_id').on('change', function() {
+                const poId = $(this).val();
+                if (poId) {
+                    $.ajax({
+                        url: `/purchase-orders/${poId}/details`,
+                        method: 'GET',
+                        success: function(response) {
+                            $('#vendor_name').text(response.vendor_name);
+                            $('#po_status').text(response.status);
+                        },
+                        error: function(xhr) {
+                            console.error(xhr.responseText);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'Terjadi kesalahan saat mengambil detail Purchase Order'
+                            });
+                        }
+                    });
+                } else {
+                    $('#vendor_name').text('-');
+                    $('#po_status').text('-');
+                }
+            });
         });
     </script>
 @endpush
