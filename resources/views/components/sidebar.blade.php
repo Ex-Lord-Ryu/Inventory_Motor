@@ -30,6 +30,11 @@
                 <a class="nav-link" href="{{ url('purchase_orders_details') }}"><i class="fas fa-clipboard"></i> <span>Purchase Order Details</span></a>
             </li>
 
+            <li class="menu-header">Stock</li>
+            <li class="{{ Request::is('stock') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ url('stock') }}"><i class="fas fa-dolly"></i> <span>Stock</span></a>
+            </li>
+
             <li class="menu-header">Data Master</li>
             <li class="{{ Request::is('master_motor') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ url('master_motor') }}"><i class="fas fa-motorcycle"></i> <span>Master Motor</span></a>

@@ -65,4 +65,22 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/purchase_orders_details/store', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'store'])->name('purchase_orders_details.store')->middleware('superadmin', 'admin',);
     Route::delete('/purchase_orders_details/delete/{id}', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'destroy'])->name('purchase_orders_details.delete')->middleware('superadmin', 'admin',);
     Route::patch('/purchase_orders_details/{id}/cancel', [App\Http\Controllers\PurchaseOrdersDetailsController::class, 'cancel'])->name('purchase_orders_details.cancel')->middleware('superadmin', 'admin',);
+
+    Route::get('/stock', [App\Http\Controllers\StockController::class, 'index'])->name('stock.index')->middleware('superadmin', 'admin',);
+    Route::get('/stock/{id}/show', [App\Http\Controllers\StockController::class, 'show'])->name('stock.show')->middleware('superadmin', 'admin',);
+    Route::patch('/stock/update-type', [\App\Http\Controllers\StockController::class, 'updateType'])->name('stock.updateType')->middleware('superadmin', 'admin',);
+
+    Route::get('/stock_in', [App\Http\Controllers\StockController::class, 'index'])->name('stock_in.index')->middleware('superadmin', 'admin',);
+    Route::get('/stock_in/{id}/show', [App\Http\Controllers\StockController::class, 'show'])->name('stock_in.show')->middleware('superadmin', 'admin',);
+    Route::get('/stock_in/create', [App\Http\Controllers\StockController::class, 'create'])->name('stock_in.create')->middleware('superadmin', 'admin',);
+    Route::post('/stock_in/store', [App\Http\Controllers\StockController::class, 'store'])->name('stock_in.store')->middleware('superadmin', 'admin',);
+    Route::delete('/stock_in/delete/{id}', [App\Http\Controllers\StockController::class, 'destroy'])->name('stock_in.delete')->middleware('superadmin', 'admin',);
+    Route::patch('/stock_in/{id}/cancel', [App\Http\Controllers\StockController::class, 'cancel'])->name('stock_in.cancel')->middleware('superadmin', 'admin',);
+
+    Route::get('/stock_out', [App\Http\Controllers\StockController::class, 'index'])->name('stock_out.index')->middleware('superadmin', 'admin',);
+    Route::get('/stock_out/{id}/show', [App\Http\Controllers\StockController::class, 'show'])->name('stock_out.show')->middleware('superadmin', 'admin',);
+    Route::get('/stock_out/create', [App\Http\Controllers\StockController::class, 'create'])->name('stock_out.create')->middleware('superadmin', 'admin',);
+    Route::post('/stock_out/store', [App\Http\Controllers\StockController::class, 'store'])->name('stock_out.store')->middleware('superadmin', 'admin',);
+    Route::delete('/stock_out/delete/{id}', [App\Http\Controllers\StockController::class, 'destroy'])->name('stock_out.delete')->middleware('superadmin', 'admin',);
+    Route::patch('/stock_out/{id}/cancel', [App\Http\Controllers\StockController::class, 'cancel'])->name('stock_out.cancel')->middleware('superadmin', 'admin',);
 });
