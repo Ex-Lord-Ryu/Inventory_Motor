@@ -678,7 +678,7 @@
                                         timer: 1500
                                     }).then(() => {
                                         window.location.href = response
-                                        .redirect;
+                                            .redirect;
                                     });
                                 } else {
                                     Swal.fire({
@@ -764,14 +764,25 @@
                 const poId = $(this).val();
                 if (poId) {
                     $.ajax({
-                        url: `/purchase-orders/${poId}/details`,
+                        url: `/purchase-orders/${poId}/details`, // Pastikan ini sesuai dengan route yang Anda definisikan
                         method: 'GET',
                         success: function(response) {
-                            $('#vendor_name').text(response.vendor_name);
-                            $('#po_status').text(response.status);
+                            if (response.success) {
+                                $('#vendor_name').text(response.vendor_name);
+                                $('#po_status').text(response.status);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: response.message ||
+                                        'Terjadi kesalahan saat mengambil detail Purchase Order'
+                                });
+                            }
                         },
-                        error: function(xhr) {
-                            console.error(xhr.responseText);
+                        error: function(xhr, status, error) {
+                            console.error('XHR:', xhr);
+                            console.error('Status:', status);
+                            console.error('Error:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Oops...',

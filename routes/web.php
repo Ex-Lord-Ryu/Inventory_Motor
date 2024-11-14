@@ -35,8 +35,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/purchase_orders/create', [App\Http\Controllers\PurchaseOrderController::class, 'create'])->name('purchase_orders.create')->middleware('superadmin', 'admin', 'finance');
     Route::post('/purchase_orders/store', [App\Http\Controllers\PurchaseOrderController::class, 'store'])->name('purchase_orders.store')->middleware('superadmin', 'admin', 'finance');
     Route::get('/purchase_orders/edit/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'edit'])->name('purchase_orders.edit')->middleware('superadmin', 'admin', 'finance');
-    Route::put('/purchase_orders/update/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'update'])->name('purchase_orders.update')->middleware('superadmin', 'admin', 'finance');
+    Route::put('/purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'update'])->name('purchase_orders.update')->middleware('superadmin', 'admin', 'finance');
     Route::delete('/purchase_orders/delete/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'destroy'])->name('purchase_orders.delete')->middleware('superadmin', 'admin', 'finance');
+    Route::get('/purchase-orders/{id}/details', [\App\Http\Controllers\PurchaseOrderController::class, 'getDetails'])->name('purchase_orders.getDetails');
 
     Route::get('/master_warna', [App\Http\Controllers\MasterWarnaController::class, 'index'])->name('master_warna.index')->middleware('superadmin', 'admin',);
     Route::get('/master_warna/create', [App\Http\Controllers\MasterWarnaController::class, 'create'])->name('master_warna.create')->middleware('superadmin', 'admin',);
@@ -69,6 +70,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/stock', [App\Http\Controllers\StockController::class, 'index'])->name('stock.index')->middleware('superadmin', 'admin',);
     Route::get('/stock/{id}/show', [App\Http\Controllers\StockController::class, 'show'])->name('stock.show')->middleware('superadmin', 'admin',);
     Route::patch('/stock/update-type', [\App\Http\Controllers\StockController::class, 'updateType'])->name('stock.updateType')->middleware('superadmin', 'admin',);
+    Route::post('/add-to-stock/{invoice}', [\App\Http\Controllers\StockController::class, 'addToStock'])->name('add.to.stock')->middleware('superadmin', 'admin',);
+    Route::post('/update-stock-from-completed-orders', [\App\Http\Controllers\StockController::class, 'updateStockFromCompletedOrders'])->name('stock.update-from-completed-orders')->middleware('superadmin', 'admin',);
+    Route::post('/stocks/{stockId}/apply-discount', [\App\Http\Controllers\StockController::class, 'applyDiscount'])->name('stocks.applyDiscount')->middleware('superadmin', 'admin',);
+    Route::post('/stock/remove', [\App\Http\Controllers\StockController::class, 'removeFromStock'])->name('stock.remove')->middleware('superadmin', 'admin',);
+    Route::put('/stock/{id}/update-details', [\App\Http\Controllers\StockController::class, 'updateDetails'])->name('stock.update-details')->middleware('superadmin', 'admin',);
+    Route::get('/stock/{id}/edit-pricing', [\App\Http\Controllers\StockController::class, 'editPricing'])->name('stock.edit-pricing')->middleware('superadmin', 'admin',);
+    Route::get('/stock/{stockId}/motor-units', [\App\Http\Controllers\StockController::class, 'showMotorUnits'])->name('stock.motor-units')->middleware('superadmin', 'admin',);
+    Route::post('/stock/{stockId}/motor-units', [\App\Http\Controllers\StockController::class, 'addMotorUnit'])->name('stock.add-motor-unit')->middleware('superadmin', 'admin',);
+    Route::patch('/motor-units/{motorUnitId}/status', [\App\Http\Controllers\StockController::class, 'updateMotorUnitStatus'])->name('stock.update-motor-unit-status')->middleware('superadmin', 'admin',);
+    Route::delete('/motor-units/{motorUnitId}', [\App\Http\Controllers\StockController::class, 'deleteMotorUnit'])->name('stock.delete-motor-unit')->middleware('superadmin', 'admin',);
+
 
     Route::get('/stock_in', [App\Http\Controllers\StockController::class, 'index'])->name('stock_in.index')->middleware('superadmin', 'admin',);
     Route::get('/stock_in/{id}/show', [App\Http\Controllers\StockController::class, 'show'])->name('stock_in.show')->middleware('superadmin', 'admin',);

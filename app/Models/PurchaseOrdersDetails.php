@@ -33,10 +33,11 @@ class PurchaseOrdersDetails extends Model
             $model->total_harga = $model->jumlah * $model->harga;
         });
     }   
+    
     public function purchaseOrder()
     {
-        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
-    }    
+        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id', 'id');
+    }  
 
     public function motor()
     {

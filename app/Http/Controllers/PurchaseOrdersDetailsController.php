@@ -19,7 +19,6 @@ class PurchaseOrdersDetailsController extends Controller
         $order = $request->get('order', 'asc');
         $search = $request->get('search');
 
-        // Modified query to properly handle grouping
         $query = PurchaseOrdersDetails::select(
             'purchase_orders_details.invoice',
             'purchase_orders_details.status',
@@ -28,24 +27,19 @@ class PurchaseOrdersDetailsController extends Controller
             DB::raw('MAX(purchase_orders_details.created_at) as created_at')
         )
             ->groupBy('purchase_orders_details.invoice', 'purchase_orders_details.status', 'purchase_orders_details.order');
-        // Apply search filter if provided
+
         if ($search) {
             $query->where('invoice', 'like', "%{$search}%");
         }
 
-        // Apply sorting
-        $purchaseOrdersDetails = $query->orderBy($sortBy, $order)
-            ->paginate(10);
+        $purchaseOrdersDetails = $query->orderBy($sortBy, $order)->paginate(10);
 
-        return view(
-            'layouts.purchase_orders_details.index',
-            compact('purchaseOrdersDetails', 'sortBy', 'order', 'search')
-        );
+        return view('layouts.purchase_orders_details.index', compact('purchaseOrdersDetails', 'sortBy', 'order', 'search'));
     }
 
     public function create()
     {
-        $purchaseOrders = PurchaseOrder::all();
+        $purchaseOrders = PurchaseOrder::whereNotIn('status', ['completed', 'cancelled'])->get();
         $motors = MasterMotor::all();
         $spareParts = MasterSparePart::all();
         $masterWarna = MasterWarna::all();
@@ -212,6 +206,12 @@ class PurchaseOrdersDetailsController extends Controller
         $purchaseOrderDetail = PurchaseOrdersDetails::findOrFail($id);
         $invoice = $purchaseOrderDetail->invoice;
 
+        // Check if the status is completed or cancelled
+        if (in_array($purchaseOrderDetail->status, ['completed', 'cancelled'])) {
+            return redirect()->route('purchase_orders_details.index')
+                ->with('error', 'Cannot access completed or cancelled orders.');
+        }
+
         $purchaseOrderDetails = PurchaseOrdersDetails::with(['motor', 'sparePart', 'warna'])
             ->where('invoice', $invoice)
             ->get();
@@ -224,8 +224,12 @@ class PurchaseOrdersDetailsController extends Controller
 
             $totalPrice = $purchaseOrderDetails->sum('total_harga');
 
+            // Get the associated PurchaseOrder to display its status
+            $purchaseOrder = PurchaseOrder::where('invoice', $invoice)->first();
+
             return view('layouts.purchase_orders_details.show', [
                 'invoice' => $invoice,
+                'status' => $purchaseOrder ? $purchaseOrder->status : 'Unknown',
                 'motorDetails' => $motorDetails,
                 'sparePartDetails' => $sparePartDetails,
                 'totalPrice' => $totalPrice
@@ -267,7 +271,6 @@ class PurchaseOrdersDetailsController extends Controller
             })
             ->values();
     }
-
 
     public function destroy($id)
     {
