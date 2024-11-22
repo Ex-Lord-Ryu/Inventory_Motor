@@ -27,6 +27,16 @@
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
         }
+
+        .modal-body {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .table-bordered th {
+            width: 30%;
+            background-color: #f8f9fa;
+        }
     </style>
 
     <div class="main-content">
@@ -98,6 +108,7 @@
                                             <tr>
                                                 <th>No</th>
                                                 <th>Motor Name</th>
+                                                <th>Warna</th>
                                                 <th>Type</th>
                                                 <th>Tanggal Masuk</th>
                                                 <th>Action</th>
@@ -108,6 +119,7 @@
                                                 <tr>
                                                     <td>{{ $index + 1 }}</td>
                                                     <td>{{ $motor->motor->nama_motor }}</td>
+                                                    <td>{{ $motor->warna->nama_warna ?? 'N/A' }}</td>
                                                     <td><span
                                                             class="badge badge-{{ $motor->type == 'in' ? 'success' : 'danger' }}">{{ $motor->type }}</span>
                                                     </td>
@@ -118,10 +130,11 @@
                                                             data-target="#motorModal{{ $motor->id }}">
                                                             <i class="fas fa-eye"></i> Detail
                                                         </button>
-                                                        <a href="{{ route('stock.edit-pricing', $motor->id) }}"
+                                                        <a href="{{ route('stock.edit-pricing', ['id' => $motor->id, 'type' => 'motor']) }}"
                                                             class="btn btn-warning btn-sm">
                                                             <i class="fas fa-edit"></i> Update Harga
                                                         </a>
+                                                        <a href="{{ route('stock.input-motor') }}" class="btn btn-primary btn-sm">Input Data</a>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -166,7 +179,7 @@
                                                             data-target="#sparePartModal{{ $sparePart->id }}">
                                                             <i class="fas fa-eye"></i> Detail
                                                         </button>
-                                                        <a href="{{ route('stock.edit-pricing', $sparePart->id) }}"
+                                                        <a href="{{ route('stock.edit-pricing', ['id' => $sparePart->id, 'type' => 'spare_part']) }}"
                                                             class="btn btn-warning btn-sm">
                                                             <i class="fas fa-edit"></i> Update Harga
                                                         </a>
@@ -231,28 +244,20 @@
                                         <td>{{ $motor->jumlah }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Harga Beli</th>
-                                        <td>Rp {{ number_format($motor->harga_beli, 0, ',', '.') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Harga Jual</th>
-                                        <td>Rp {{ number_format($motor->harga_jual, 0, ',', '.') }}</td>
+                                        <th>Warna</th>
+                                        <td>{{ $motor->warna->nama_warna ?? 'N/A' }}</td>
                                     </tr>
                                 </table>
                             </div>
                             <div class="col-md-6">
                                 <table class="table">
                                     <tr>
-                                        <th>Harga Jual Diskon</th>
-                                        <td>Rp {{ number_format($motor->harga_jual_diskon, 0, ',', '.') }}</td>
+                                        <th>Harga Beli</th>
+                                        <td>Rp {{ number_format($motor->harga_beli, 0, ',', '.') }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Nomor Rangka</th>
-                                        <td>{{ $motor->nomor_rangka ?? 'N/A' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Nomor Mesin</th>
-                                        <td>{{ $motor->nomor_mesin ?? 'N/A' }}</td>
+                                        <th>Harga Jual</th>
+                                        <td>Rp {{ number_format($motor->harga_jual, 0, ',', '.') }}</td>
                                     </tr>
                                     <tr>
                                         <th>Tanggal Masuk</th>
@@ -267,12 +272,6 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-whitesmoke br">
-                        <a href="{{ route('stock.edit-pricing', $motor->id) }}" class="btn btn-warning">
-                            <i class="fas fa-edit"></i> Update Harga
-                        </a>
-                        <a href="{{ route('stock.motor-units', $motor->id) }}" class="btn btn-info">
-                            <i class="fas fa-motorcycle"></i> Lihat Unit Motor
-                        </a>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -323,10 +322,6 @@
                                         <td>Rp {{ number_format($sparePart->harga_jual, 0, ',', '.') }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Harga Jual Diskon</th>
-                                        <td>Rp {{ number_format($sparePart->harga_jual_diskon, 0, ',', '.') }}</td>
-                                    </tr>
-                                    <tr>
                                         <th>Tanggal Masuk</th>
                                         <td>{{ $sparePart->created_at->format('Y-m-d H:i') }}</td>
                                     </tr>
@@ -339,9 +334,6 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-whitesmoke br">
-                        <a href="{{ route('stock.edit-pricing', $sparePart->id) }}" class="btn btn-warning">
-                            <i class="fas fa-edit"></i> Update Harga
-                        </a>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>

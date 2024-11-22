@@ -16,6 +16,10 @@
                         <label for="nama_spare_part">Nama Spare Part</label>
                         <input type="text" name="nama_spare_part" class="form-control" value="{{ $master_spare_part->nama_spare_part }}" required>
                     </div>
+                    <div class="form-group">
+                        <label for="unit_satuan">Unit Satuan</label>
+                        <input type="number" class="form-control" id="unit_satuan" name="unit_satuan" value="{{ $master_spare_part->unit_satuan }}" required>
+                    </div>
                     <button type="submit" class="btn btn-primary">Update</button>
                 </form>
             </div>

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('master_spare_parts', function (Blueprint $table) {
             $table->id();
             $table->string('nama_spare_part');
+            $table->integer('unit_satuan');
             $table->integer('order')->nullable(false)->default(0);
             $table->timestamps();
         });

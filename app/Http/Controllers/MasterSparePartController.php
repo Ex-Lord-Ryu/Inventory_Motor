@@ -34,6 +34,7 @@ class MasterSparePartController extends Controller
         // Validate the incoming request data
         $validatedData = $request->validate([
             'nama_spare_part' => 'required|string|max:255',
+            'unit_satuan' => 'required|integer|min:1',
         ]);
     
         $highestOrder = MasterSparePart::max('order');
@@ -55,6 +56,7 @@ class MasterSparePartController extends Controller
     {
         $request->validate([
             'nama_spare_part' => 'required|string|max:255',
+            'unit_satuan' => 'required|integer|min:1',
         ]);
 
         $master_spare_part = MasterSparePart::findOrFail($id);

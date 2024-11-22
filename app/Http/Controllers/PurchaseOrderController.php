@@ -158,65 +158,65 @@ class PurchaseOrderController extends Controller
         return redirect()->route('purchase_orders.index')->with('message', 'Purchase Order berhasil dihapus.');
     }
 
-    public function completePurchaseOrder($id)
-    {
-        DB::beginTransaction();
-        try {
-            $purchaseOrder = PurchaseOrder::findOrFail($id);
-            $purchaseOrder->update(['status' => 'completed']);
+    // public function completePurchaseOrder($id)
+    // {
+    //     DB::beginTransaction();
+    //     try {
+    //         $purchaseOrder = PurchaseOrder::findOrFail($id);
+    //         $purchaseOrder->update(['status' => 'completed']);
 
-            foreach ($purchaseOrder->purchaseOrderDetails as $detail) {
-                if ($detail->motor_id) {
-                    $stock = Stock::create([
-                        'motor_id' => $detail->motor_id,
-                        'jumlah' => $detail->jumlah,
-                        'type' => 'in',
-                        'purchase_order_detail_id' => $detail->id,
-                        'order' => $this->generateOrderNumber(),
-                        'harga_beli' => $detail->harga,
-                        'harga_jual' => $detail->harga * 1.2, // Asumsi markup 20%
-                        'warna_id' => $detail->warna_id,
-                    ]);
+    //         foreach ($purchaseOrder->purchaseOrderDetails as $detail) {
+    //             if ($detail->motor_id) {
+    //                 $stock = Stock::create([
+    //                     'motor_id' => $detail->motor_id,
+    //                     'jumlah' => $detail->jumlah,
+    //                     'type' => 'in',
+    //                     'purchase_order_detail_id' => $detail->id,
+    //                     'order' => $this->generateOrderNumber(),
+    //                     'harga_beli' => $detail->harga,
+    //                     'harga_jual' => $detail->harga * 1.2, // Asumsi markup 20%
+    //                     'warna_id' => $detail->warna_id,
+    //                 ]);
 
-                    // Tambahkan unit motor secara otomatis
-                    for ($i = 0; $i < $detail->jumlah; $i++) {
-                        $motorUnit = new MotorUnit([
-                            'nomor_rangka' => $this->generateUniqueNumber('rangka'),
-                            'nomor_mesin' => $this->generateUniqueNumber('mesin'),
-                            'status' => MotorUnit::STATUS_AVAILABLE,
-                        ]);
-                        $stock->motorUnits()->save($motorUnit);
-                    }
-                    $stock->update(['unit_count' => $detail->jumlah]);
-                }
-                // ... handle spare parts if needed ...
-            }
+    //                 // Tambahkan unit motor secara otomatis
+    //                 for ($i = 0; $i < $detail->jumlah; $i++) {
+    //                     $motorUnit = new MotorUnit([
+    //                         'nomor_rangka' => $this->generateUniqueNumber('rangka'),
+    //                         'nomor_mesin' => $this->generateUniqueNumber('mesin'),
+    //                         'status' => MotorUnit::STATUS_AVAILABLE,
+    //                     ]);
+    //                     $stock->motorUnits()->save($motorUnit);
+    //                 }
+    //                 $stock->update(['unit_count' => $detail->jumlah]);
+    //             }
+    //             // ... handle spare parts if needed ...
+    //         }
 
-            DB::commit();
-            return redirect()->back()->with('success', 'Purchase Order berhasil diselesaikan dan stok diperbarui.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal menyelesaikan Purchase Order: ' . $e->getMessage());
-        }
-    }
+    //         DB::commit();
+    //         return redirect()->back()->with('success', 'Purchase Order berhasil diselesaikan dan stok diperbarui.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()->with('error', 'Gagal menyelesaikan Purchase Order: ' . $e->getMessage());
+    //     }
+    // }
 
-    private function generateUniqueNumber($type)
-    {
-        $prefix = $type === 'rangka' ? 'RK' : 'MN';
-        $number = strtoupper(uniqid($prefix));
+    // private function generateUniqueNumber($type)
+    // {
+    //     $prefix = $type === 'rangka' ? 'RK' : 'MN';
+    //     $number = strtoupper(uniqid($prefix));
         
-        while (MotorUnit::where($type === 'rangka' ? 'nomor_rangka' : 'nomor_mesin', $number)->exists()) {
-            $number = strtoupper(uniqid($prefix));
-        }
+    //     while (MotorUnit::where($type === 'rangka' ? 'nomor_rangka' : 'nomor_mesin', $number)->exists()) {
+    //         $number = strtoupper(uniqid($prefix));
+    //     }
         
-        return $number;
-    }
+    //     return $number;
+    // }
 
-    private function generateOrderNumber()
-    {
-        $lastOrder = Stock::max('order') ?? 0;
-        return $lastOrder + 1;
-    }
+    // private function generateOrderNumber()
+    // {
+    //     $lastOrder = Stock::max('order') ?? 0;
+    //     return $lastOrder + 1;
+    // }
 
 
 }

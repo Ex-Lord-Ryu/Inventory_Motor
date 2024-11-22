@@ -8,9 +8,9 @@ class MotorUnit extends Model
 {
     protected $fillable = ['stock_id', 'nomor_rangka', 'nomor_mesin', 'status'];
 
-    public function stock()
+    public function stockMotor()
     {
-        return $this->belongsTo(Stock::class);
+        return $this->belongsTo(StockMotor::class);
     }
     
     public function setStatusAttribute($value)

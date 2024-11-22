@@ -15,6 +15,10 @@
                         <label for="nama_spare_part">Nama Spare Part</label>
                         <input type="text" name="nama_spare_part" class="form-control" required>
                     </div>
+                    <div class="form-group">
+                        <label for="unit_satuan">Unit Satuan</label>
+                        <input type="number" class="form-control" id="unit_satuan" name="unit_satuan" value="{{ old('unit_satuan', $sparePart->unit_satuan ?? 1) }}" required>
+                    </div>
                     <button type="submit" class="btn btn-primary">Save</button>
                 </form>
             </div>

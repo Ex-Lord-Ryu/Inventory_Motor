@@ -71,28 +71,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/stock/{id}/show', [App\Http\Controllers\StockController::class, 'show'])->name('stock.show')->middleware('superadmin', 'admin',);
     Route::patch('/stock/update-type', [\App\Http\Controllers\StockController::class, 'updateType'])->name('stock.updateType')->middleware('superadmin', 'admin',);
     Route::post('/add-to-stock/{invoice}', [\App\Http\Controllers\StockController::class, 'addToStock'])->name('add.to.stock')->middleware('superadmin', 'admin',);
-    Route::post('/update-stock-from-completed-orders', [\App\Http\Controllers\StockController::class, 'updateStockFromCompletedOrders'])->name('stock.update-from-completed-orders')->middleware('superadmin', 'admin',);
-    Route::post('/stocks/{stockId}/apply-discount', [\App\Http\Controllers\StockController::class, 'applyDiscount'])->name('stocks.applyDiscount')->middleware('superadmin', 'admin',);
-    Route::post('/stock/remove', [\App\Http\Controllers\StockController::class, 'removeFromStock'])->name('stock.remove')->middleware('superadmin', 'admin',);
     Route::put('/stock/{id}/update-details', [\App\Http\Controllers\StockController::class, 'updateDetails'])->name('stock.update-details')->middleware('superadmin', 'admin',);
-    Route::get('/stock/{id}/edit-pricing', [\App\Http\Controllers\StockController::class, 'editPricing'])->name('stock.edit-pricing')->middleware('superadmin', 'admin',);
-    Route::get('/stock/{stockId}/motor-units', [\App\Http\Controllers\StockController::class, 'showMotorUnits'])->name('stock.motor-units')->middleware('superadmin', 'admin',);
-    Route::post('/stock/{stockId}/motor-units', [\App\Http\Controllers\StockController::class, 'addMotorUnit'])->name('stock.add-motor-unit')->middleware('superadmin', 'admin',);
-    Route::patch('/motor-units/{motorUnitId}/status', [\App\Http\Controllers\StockController::class, 'updateMotorUnitStatus'])->name('stock.update-motor-unit-status')->middleware('superadmin', 'admin',);
-    Route::delete('/motor-units/{motorUnitId}', [\App\Http\Controllers\StockController::class, 'deleteMotorUnit'])->name('stock.delete-motor-unit')->middleware('superadmin', 'admin',);
+    Route::get('/stock/{id}/{type}/edit-pricing', [\App\Http\Controllers\StockController::class, 'editPricing'])->name('stock.edit-pricing')->middleware('superadmin', 'admin',);
+    Route::put('/stock/{id}/{type}/update-details', [\App\Http\Controllers\StockController::class, 'updateDetails'])->name('stock.update-details')->middleware('superadmin', 'admin',);
+    Route::get('/stock/input-motor', [\App\Http\Controllers\StockController::class, 'inputMotorData'])->name('stock.input-motor')->middleware('superadmin', 'admin',);
+    Route::post('/stock/store-motor', [\App\Http\Controllers\StockController::class, 'storeMotorData'])->name('stock.store-motor-data')->middleware('superadmin', 'admin',);
+    Route::post('/stock/sell-motor/{id}', [\App\Http\Controllers\StockController::class, 'sellMotor'])->name('stock.sell-motor')->middleware('superadmin', 'admin',);
+    Route::post('/stock/sell-spare-part/{id}', [\App\Http\Controllers\StockController::class, 'sellSparePart'])->name('stock.sell-spare-part')->middleware('superadmin', 'admin',);
+    Route::get('/stock/sold-items', [\App\Http\Controllers\StockController::class, 'soldItems'])->name('stock.sold-items')->middleware('superadmin', 'admin',);
+    Route::get('/stock/all', [App\Http\Controllers\StockController::class, 'allStock'])->name('stock.all')->middleware('superadmin', 'admin');
 
+    Route::get('/order_motor', [\App\Http\Controllers\OrderMotorController::class, 'index'])->name('order_motor.index')->middleware('superadmin', 'admin', 'sales');
+    Route::post('/order_motor', [\App\Http\Controllers\OrderMotorController::class, 'store'])->name('order_motor.store')->middleware('superadmin', 'admin', 'sales');
 
-    Route::get('/stock_in', [App\Http\Controllers\StockController::class, 'index'])->name('stock_in.index')->middleware('superadmin', 'admin',);
-    Route::get('/stock_in/{id}/show', [App\Http\Controllers\StockController::class, 'show'])->name('stock_in.show')->middleware('superadmin', 'admin',);
-    Route::get('/stock_in/create', [App\Http\Controllers\StockController::class, 'create'])->name('stock_in.create')->middleware('superadmin', 'admin',);
-    Route::post('/stock_in/store', [App\Http\Controllers\StockController::class, 'store'])->name('stock_in.store')->middleware('superadmin', 'admin',);
-    Route::delete('/stock_in/delete/{id}', [App\Http\Controllers\StockController::class, 'destroy'])->name('stock_in.delete')->middleware('superadmin', 'admin',);
-    Route::patch('/stock_in/{id}/cancel', [App\Http\Controllers\StockController::class, 'cancel'])->name('stock_in.cancel')->middleware('superadmin', 'admin',);
-
-    Route::get('/stock_out', [App\Http\Controllers\StockController::class, 'index'])->name('stock_out.index')->middleware('superadmin', 'admin',);
-    Route::get('/stock_out/{id}/show', [App\Http\Controllers\StockController::class, 'show'])->name('stock_out.show')->middleware('superadmin', 'admin',);
-    Route::get('/stock_out/create', [App\Http\Controllers\StockController::class, 'create'])->name('stock_out.create')->middleware('superadmin', 'admin',);
-    Route::post('/stock_out/store', [App\Http\Controllers\StockController::class, 'store'])->name('stock_out.store')->middleware('superadmin', 'admin',);
-    Route::delete('/stock_out/delete/{id}', [App\Http\Controllers\StockController::class, 'destroy'])->name('stock_out.delete')->middleware('superadmin', 'admin',);
-    Route::patch('/stock_out/{id}/cancel', [App\Http\Controllers\StockController::class, 'cancel'])->name('stock_out.cancel')->middleware('superadmin', 'admin',);
+    Route::get('/order_spare_parts', [App\Http\Controllers\OrderSparePartController::class, 'index'])->name('order_spare_parts.index')->middleware('superadmin', 'admin', 'sales');
+    Route::post('/order_spare_parts', [App\Http\Controllers\OrderSparePartController::class, 'store'])->name('order_spare_parts.store')->middleware('superadmin', 'admin', 'sales');
 });
