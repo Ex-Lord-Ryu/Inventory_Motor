@@ -45,7 +45,7 @@ class DistributorController extends Controller
 
         Distributor::create($validatedData);
 
-        return redirect()->route('distributor.index')->with('message', 'Vendor berhasil ditambahkan.');
+        return redirect()->route('distributor.index')->with('success', 'Data vendor berhasil disimpan!');
     }
 
     public function edit($id)

@@ -3,7 +3,25 @@
 @section('title', 'Master Vendor')
 
 @push('style')
-    <!-- CSS Libraries -->
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .pagination {
+            justify-content: flex-end;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
 @endpush
 
 @section('content')
@@ -14,131 +32,122 @@
             </div>
 
             @if (session('message'))
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('message') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             @endif
             @if (session('error'))
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ session('error') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             @endif
 
             <div class="section-body">
-                <div class="table-responsive">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <form action="{{ route('distributor.index') }}" method="GET" class="d-flex">
-                                <div class="input-group">
-                                    <input type="text" name="search" class="form-control" placeholder="Cari Berdasarkan ID...">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary" type="submit">Search</button>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <form action="{{ route('distributor.index') }}" method="GET" class="d-flex">
+                                    <div class="input-group">
+                                        <input type="text" name="search" class="form-control"
+                                            placeholder="Cari Berdasarkan ID...">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i>
+                                                Search</button>
+                                        </div>
                                     </div>
-                                    <a href="{{ route('distributor.create') }}" class="btn btn-primary ml-2">Tambah Vendor</a>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <a href="{{ route('distributor.create') }}" class="btn btn-success"><i
+                                        class="fas fa-plus"></i> Tambah Vendor</a>
+                            </div>
                         </div>
-                    </div>
 
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>
-                                    ID
-                                    <a href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'id', 'order' => ($sortBy == 'id' && $order == 'asc') ? 'desc' : 'asc'])) }}">
-                                        @if ($sortBy == 'id')
-                                            {{ $order == 'asc' ? '▲' : '▼' }}
-                                        @else
-                                            ▼▲
-                                        @endif
-                                    </a>
-                                </th>
-                                <th>
-                                    Name Vendor
-                                    <a href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'name_Vendor', 'order' => ($sortBy == 'name_Vendor' && $order == 'asc') ? 'desc' : 'asc'])) }}">
-                                        @if ($sortBy == 'name_Vendor')
-                                            {{ $order == 'asc' ? '▲' : '▼' }}
-                                        @else
-                                            ▼▲
-                                        @endif
-                                    </a>
-                                </th>
-                                <th>
-                                    Telepon
-                                    <a href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'telepon', 'order' => ($sortBy == 'telepon' && $order == 'asc') ? 'desc' : 'asc'])) }}">
-                                        @if ($sortBy == 'telepon')
-                                            {{ $order == 'asc' ? '▲' : '▼' }}
-                                        @else
-                                            ▼▲
-                                        @endif
-                                    </a>
-                                </th>
-                                <th>
-                                    Alamat
-                                    <a href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'alamat', 'order' => ($sortBy == 'alamat' && $order == 'asc') ? 'desc' : 'asc'])) }}">
-                                        @if ($sortBy == 'alamat')
-                                            {{ $order == 'asc' ? '▲' : '▼' }}
-                                        @else
-                                            ▼▲
-                                        @endif
-                                    </a>
-                                </th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($distributor as $item)
-                                <tr>
-                                    <td>{{ $item->order }}</td>
-                                    <td>{{ $item->name_Vendor }}</td>
-                                    <td>{{ $item->telepon }}</td>
-                                    <td>{{ $item->alamat }}</td>
-                                    <td>
-                                        <a href="{{ route('distributor.edit', $item->id) }}" class="btn btn-primary">Edit</a>
-                                        <form action="{{ route('distributor.delete', $item->id) }}" method="POST" style="display: inline-block;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    
-                    <!-- Pagination Section -->
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div>
-                            <p class="text-sm text-gray-700 leading-5 dark:text-gray-400">
-                                Showing
-                                <span class="font-medium">{{ $distributor->firstItem() }}</span>
-                                to
-                                <span class="font-medium">{{ $distributor->lastItem() }}</span>
-                                of
-                                <span class="font-medium">{{ $distributor->total() }}</span>
-                                results
-                            </p>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>
+                                            ID
+                                            <a
+                                                href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'id', 'order' => $sortBy == 'id' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                <i
+                                                    class="fas fa-sort{{ $sortBy == 'id' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
+                                            </a>
+                                        </th>
+                                        <th>
+                                            Name Vendor
+                                            <a
+                                                href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'name_Vendor', 'order' => $sortBy == 'name_Vendor' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                <i
+                                                    class="fas fa-sort{{ $sortBy == 'name_Vendor' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
+                                            </a>
+                                        </th>
+                                        <th>
+                                            Telepon
+                                            <a
+                                                href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'telepon', 'order' => $sortBy == 'telepon' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                <i
+                                                    class="fas fa-sort{{ $sortBy == 'telepon' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
+                                            </a>
+                                        </th>
+                                        <th>
+                                            Alamat
+                                            <a
+                                                href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'alamat', 'order' => $sortBy == 'alamat' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                <i
+                                                    class="fas fa-sort{{ $sortBy == 'alamat' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
+                                            </a>
+                                        </th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($distributor as $item)
+                                        <tr>
+                                            <td>{{ $item->order }}</td>
+                                            <td>{{ $item->name_Vendor }}</td>
+                                            <td>{{ $item->telepon }}</td>
+                                            <td>{{ $item->alamat }}</td>
+                                            <td>
+                                                <a href="{{ route('distributor.edit', $item->id) }}"
+                                                    class="btn btn-primary btn-sm action-btn mr-1 edit-btn">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <form action="{{ route('distributor.delete', $item->id) }}" method="POST"
+                                                    style="display: inline-block;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="btn btn-danger btn-sm action-btn delete-btn">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                        <div>
-                            @if ($distributor->onFirstPage())
-                                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default leading-5 rounded-md dark:text-gray-600 dark:bg-gray-800 dark:border-gray-600">
-                                    « Previous
-                                </span>
-                            @else
-                                <a href="{{ $distributor->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 rounded-md hover:text-gray-500 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:focus:border-blue-700 dark:active:bg-gray-700 dark:active:text-gray-300">
-                                    « Previous
-                                </a>
-                            @endif
 
-                            @if ($distributor->hasMorePages())
-                                <a href="{{ $distributor->nextPageUrl() }}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 rounded-md hover:text-gray-500 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:focus:border-blue-700 dark:active:bg-gray-700 dark:active:text-gray-300">
-                                    Next »
-                                </a>
-                            @else
-                                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default leading-5 rounded-md dark:text-gray-600 dark:bg-gray-800 dark:border-gray-600">
-                                    Next »
-                                </span>
-                            @endif
+                        <!-- Pagination Section -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <p class="text-sm text-gray-700 leading-5">
+                                    Showing {{ $distributor->firstItem() }} to {{ $distributor->lastItem() }} of
+                                    {{ $distributor->total() }} results
+                                </p>
+                            </div>
+                            <div>
+                                {{ $distributor->links() }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -148,6 +157,50 @@
 @endsection
 
 @push('scripts')
-    <!-- JS Libraries -->
-    <!-- Page Specific JS File -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Edit confirmation
+            $('.edit-btn').on('click', function(e) {
+                e.preventDefault();
+                var href = $(this).attr('href');
+
+                Swal.fire({
+                    title: 'Edit Vendor',
+                    text: "Apakah Anda yakin ingin mengedit data vendor ini?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Edit!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = href;
+                    }
+                });
+            });
+
+            // Delete confirmation
+            $('.delete-btn').on('click', function(e) {
+                e.preventDefault();
+                var form = $(this).closest('form');
+
+                Swal.fire({
+                    title: 'Hapus Vendor',
+                    text: "Apakah Anda yakin ingin menghapus data vendor ini?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 @endpush

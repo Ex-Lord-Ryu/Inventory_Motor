@@ -23,21 +23,21 @@ class PurchaseOrdersDetails extends Model
         'status',
         'warna_id',
     ];
-    
+
 
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($model) {
             $model->total_harga = $model->jumlah * $model->harga;
         });
-    }   
-    
+    }
+
     public function purchaseOrder()
     {
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id', 'id');
-    }  
+    }
 
     public function motor()
     {
@@ -53,5 +53,4 @@ class PurchaseOrdersDetails extends Model
     {
         return $this->belongsTo(MasterWarna::class, 'warna_id');
     }
-
 }

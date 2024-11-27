@@ -2,6 +2,36 @@
 
 @section('title', 'Purchase Order Details')
 
+@push('style')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+    <style>
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .card-header {
+            background-color: #6777ef;
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        .btn-action {
+            transition: all 0.3s;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="main-content">
         <section class="section">
@@ -10,105 +40,101 @@
             </div>
 
             @if (session('message'))
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('message') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             @endif
             @if (session('error'))
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ session('error') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             @endif
 
             <div class="section-body">
-                <div class="table-responsive">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <form action="{{ route('purchase_orders_details.index') }}" method="GET" class="d-flex">
-                                <div class="input-group">
-                                    <input type="text" name="search" class="form-control" placeholder="Search by ID...">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary" type="submit">Search</button>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <form action="{{ route('purchase_orders_details.index') }}" method="GET" class="d-flex">
+                                    <div class="input-group">
+                                        <input type="text" name="search" class="form-control"
+                                            placeholder="Search by ID..." value="{{ request('search') }}">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i>
+                                                Search</button>
+                                        </div>
                                     </div>
-                                    <a href="{{ route('purchase_orders_details.create') }}"
-                                        class="btn btn-primary ml-2">Tambah PO Details</a>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <a href="{{ route('purchase_orders_details.create') }}" class="btn btn-success"><i
+                                        class="fas fa-plus"></i> Tambah PO Details</a>
+                            </div>
                         </div>
-                    </div>
 
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Invoice</th>
-                                <th>Created At</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($purchaseOrdersDetails as $detail)
-                                <tr>
-                                    <td>{{ $detail->order ?? 'N/A' }}</td> <!-- Make sure this is available in your select -->
-                                    <td>{{ $detail->invoice }}</td>
-                                    <td>{{ $detail->created_at ? $detail->created_at->format('Y-m-d H:i') : 'N/A' }}</td>
-                                    <td>{{ $detail->status }}</td>
-                                    <td>
-                                        <a href="{{ route('purchase_orders_details.show', $detail->id) }}" class="btn btn-info">Show</a>
-                                        
-                                        <form action="{{ route('purchase_orders_details.cancel', ['id' => $detail->id]) }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="btn btn-danger cancel-btn" data-invoice="{{ $detail->invoice }}">Cancel</button>
-                                        </form>                                       
-                                        
-                                        <form action="{{ route('purchase_orders_details.delete', ['id' => $detail->id]) }}" method="POST" style="display: inline-block;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>                                        
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>                        
-                    </table>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Invoice</th>
+                                        <th>Created At</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($purchaseOrdersDetails as $detail)
+                                        <tr>
+                                            <td>{{ $detail->order ?? 'N/A' }}</td>
+                                            <td>{{ $detail->invoice }}</td>
+                                            <td>{{ $detail->created_at ? $detail->created_at->format('Y-m-d H:i') : 'N/A' }}
+                                            </td>
+                                            <td>
+                                                <span
+                                                    class="badge badge-{{ $detail->status == 'cancelled' ? 'danger' : 'success' }}">
+                                                    {{ $detail->status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('purchase_orders_details.show', $detail->id) }}"
+                                                    class="btn btn-info btn-sm btn-action"><i class="fas fa-eye"></i>
+                                                    Show</a>
 
-                    <!-- Pagination Section -->
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div>
-                            <p class="text-sm text-gray-700 leading-5 dark:text-gray-400">
-                                Showing
-                                <span class="font-medium">{{ $purchaseOrdersDetails->firstItem() }}</span>
-                                to
-                                <span class="font-medium">{{ $purchaseOrdersDetails->lastItem() }}</span>
-                                of
-                                <span class="font-medium">{{ $purchaseOrdersDetails->total() }}</span>
-                                results
-                            </p>
+                                                <button type="button" class="btn btn-danger btn-sm btn-action cancel-btn"
+                                                    data-id="{{ $detail->id }}" data-invoice="{{ $detail->invoice }}">
+                                                    <i class="fas fa-ban"></i> Cancel
+                                                </button>
+
+                                                <button type="button" class="btn btn-danger btn-sm btn-action delete-btn"
+                                                    data-id="{{ $detail->id }}">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                        <div>
-                            @if ($purchaseOrdersDetails->onFirstPage())
-                                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default leading-5 rounded-md dark:text-gray-600 dark:bg-gray-800 dark:border-gray-600">
-                                    « Previous
-                                </span>
-                            @else
-                                <a href="{{ $purchaseOrdersDetails->previousPageUrl() }}"
-                                    class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 rounded-md hover:text-gray-500">
-                                    « Previous
-                                </a>
-                            @endif
 
-                            @if ($purchaseOrdersDetails->hasMorePages())
-                                <a href="{{ $purchaseOrdersDetails->nextPageUrl() }}"
-                                    class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 rounded-md hover:text-gray-500">
-                                    Next »
-                                </a>
-                            @else
-                                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default leading-5 rounded-md dark:text-gray-600 dark:bg-gray-800 dark:border-gray-600">
-                                    Next »
-                                </span>
-                            @endif
+                        <!-- Pagination Section -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <p class="text-sm text-gray-700 leading-5">
+                                    Showing {{ $purchaseOrdersDetails->firstItem() }} to
+                                    {{ $purchaseOrdersDetails->lastItem() }} of {{ $purchaseOrdersDetails->total() }}
+                                    results
+                                </p>
+                            </div>
+                            <div>
+                                {{ $purchaseOrdersDetails->links() }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -116,19 +142,119 @@
         </section>
     </div>
 @endsection
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const cancelButtons = document.querySelectorAll('.cancel-btn');
-    cancelButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const invoice = this.getAttribute('data-invoice');
-            if (confirm(`Are you sure you want to cancel all order details with invoice ${invoice}?`)) {
-                this.closest('form').submit();
-            }
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.cancel-btn').on('click', function() {
+                var id = $(this).data('id');
+                var invoice = $(this).data('invoice');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `Do you want to cancel all order details with invoice ${invoice}?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, cancel it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `{{ route('purchase_orders_details.cancel', '') }}/${id}`,
+                            type: 'PATCH',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                Swal.fire(
+                                    'Cancelled!',
+                                    'The order details have been cancelled.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function() {
+                                Swal.fire(
+                                    'Error!',
+                                    'There was an error cancelling the order details.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+            });
+            $('.delete-btn').on('click', function() {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `{{ route('purchase_orders_details.delete', '') }}/${id}`,
+                            type: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                Swal.fire(
+                                    'Deleted!',
+                                    'The order details have been deleted.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function() {
+                                Swal.fire(
+                                    'Error!',
+                                    'There was an error deleting the order details.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Add confirm dialog to all delete forms
+            $('form').submit(function(e) {
+                var form = this;
+                if ($(this).find('button[type="submit"]').hasClass('delete-btn')) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                }
+            });
         });
-    });
-});
-</script>
-@endsection
+    </script>
+@endpush

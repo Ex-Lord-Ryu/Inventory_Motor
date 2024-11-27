@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'finance' => \App\Http\Middleware\FinanceMiddleware::class,
             'sales' => \App\Http\Middleware\SalesMiddleware::class,
             'operasional' => \App\Http\Middleware\OperasionalMiddleware::class,
+            'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+            'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
+
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

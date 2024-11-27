@@ -86,4 +86,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/order_spare_parts', [App\Http\Controllers\OrderSparePartController::class, 'index'])->name('order_spare_parts.index')->middleware('superadmin', 'admin', 'sales');
     Route::post('/order_spare_parts', [App\Http\Controllers\OrderSparePartController::class, 'store'])->name('order_spare_parts.store')->middleware('superadmin', 'admin', 'sales');
+
+    Route::get('/sales_report', [\App\Http\Controllers\SalesReportController::class, 'index'])->name('sales_report.index');
+    Route::get('/sales_report/export-excel', [\App\Http\Controllers\SalesReportController::class, 'exportExcel'])->name('sales_report.export_excel');
+    Route::get('/sales_report/export-pdf', [\App\Http\Controllers\SalesReportController::class, 'exportPdf'])->name('sales_report.export_pdf');
 });

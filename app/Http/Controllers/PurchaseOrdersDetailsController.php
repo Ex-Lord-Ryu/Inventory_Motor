@@ -192,25 +192,40 @@ class PurchaseOrdersDetailsController extends Controller
 
     public function cancel($id)
     {
-        $detail = PurchaseOrdersDetails::findOrFail($id);
-        $invoice = $detail->invoice;
+        DB::beginTransaction();
 
-        // Update semua detail dengan invoice yang sama
-        PurchaseOrdersDetails::where('invoice', $invoice)->update(['status' => 'cancelled']);
+        try {
+            Log::info("Attempting to cancel PurchaseOrderDetail with ID: " . $id);
 
-        return redirect()->route('purchase_orders_details.index')->with('success', 'All order details with invoice ' . $invoice . ' have been canceled.');
+            $detail = PurchaseOrdersDetails::findOrFail($id);
+            $invoice = $detail->invoice;
+
+            Log::info("Found PurchaseOrderDetail with invoice: " . $invoice);
+
+            // Update semua detail dengan invoice yang sama
+            $updatedDetailsCount = PurchaseOrdersDetails::where('invoice', $invoice)->update(['status' => 'cancelled']);
+            Log::info("Updated {$updatedDetailsCount} PurchaseOrderDetails records");
+
+            // Update status PurchaseOrder menjadi cancelled
+            $purchaseOrder = PurchaseOrder::where('invoice', $invoice)->firstOrFail();
+            $purchaseOrder->update(['status' => 'cancelled']);
+            Log::info("Updated PurchaseOrder with invoice: " . $invoice);
+
+            DB::commit();
+            Log::info("Transaction committed successfully");
+
+            return response()->json(['success' => true, 'message' => 'All order details and the associated Purchase Order with invoice ' . $invoice . ' have been canceled.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error cancelling order: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred while canceling the order: ' . $e->getMessage()], 500);
+        }
     }
 
     public function show($id)
     {
         $purchaseOrderDetail = PurchaseOrdersDetails::findOrFail($id);
         $invoice = $purchaseOrderDetail->invoice;
-
-        // Check if the status is completed or cancelled
-        if (in_array($purchaseOrderDetail->status, ['completed', 'cancelled'])) {
-            return redirect()->route('purchase_orders_details.index')
-                ->with('error', 'Cannot access completed or cancelled orders.');
-        }
 
         $purchaseOrderDetails = PurchaseOrdersDetails::with(['motor', 'sparePart', 'warna'])
             ->where('invoice', $invoice)
@@ -232,7 +247,8 @@ class PurchaseOrdersDetailsController extends Controller
                 'status' => $purchaseOrder ? $purchaseOrder->status : 'Unknown',
                 'motorDetails' => $motorDetails,
                 'sparePartDetails' => $sparePartDetails,
-                'totalPrice' => $totalPrice
+                'totalPrice' => $totalPrice,
+                'isCompletedOrCancelled' => in_array($purchaseOrderDetail->status, ['completed', 'cancelled'])
             ]);
         }
     }

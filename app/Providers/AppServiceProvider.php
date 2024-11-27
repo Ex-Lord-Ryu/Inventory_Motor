@@ -11,7 +11,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->register(\Maatwebsite\Excel\ExcelServiceProvider::class);
+        $this->app->register(\Barryvdh\DomPDF\ServiceProvider::class);
     }
 
     /**

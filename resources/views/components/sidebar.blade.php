@@ -57,6 +57,11 @@
                             Spare Parts</span></a>
                 </li>
 
+                <li class="menu-header">Laporan</li>
+                <li class="{{ Request::is('sales_report') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ url('sales_report') }}"><i class="fas fa-database"></i> <span>Laporan
+                            Penjualan</span></a>
+                </li>
 
                 <li class="menu-header">Data Master</li>
                 <li class="{{ Request::is('master_motor') ? 'active' : '' }}">
