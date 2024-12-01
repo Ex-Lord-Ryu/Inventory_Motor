@@ -108,12 +108,13 @@
                                                     Show</a>
 
                                                 <button type="button" class="btn btn-danger btn-sm btn-action cancel-btn"
-                                                    data-id="{{ $detail->id }}" data-invoice="{{ $detail->invoice }}">
+                                                    data-id="{{ $detail->id }}" data-invoice="{{ $detail->invoice }}"
+                                                    data-status="{{ $detail->status }}">
                                                     <i class="fas fa-ban"></i> Cancel
                                                 </button>
 
                                                 <button type="button" class="btn btn-danger btn-sm btn-action delete-btn"
-                                                    data-id="{{ $detail->id }}">
+                                                    data-id="{{ $detail->id }}" data-status="{{ $detail->status }}">
                                                     <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </td>
@@ -150,6 +151,16 @@
             $('.cancel-btn').on('click', function() {
                 var id = $(this).data('id');
                 var invoice = $(this).data('invoice');
+                var status = $(this).data('status');
+
+                if (status === 'completed') {
+                    Swal.fire(
+                        'Cannot Cancel',
+                        'Completed orders cannot be cancelled.',
+                        'error'
+                    );
+                    return;
+                }
 
                 Swal.fire({
                     title: 'Are you sure?',
@@ -162,23 +173,33 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: `{{ route('purchase_orders_details.cancel', '') }}/${id}`,
+                            url: "{{ route('purchase_orders_details.cancel', ':id') }}"
+                                .replace(':id', id),
                             type: 'PATCH',
                             data: {
                                 _token: '{{ csrf_token() }}'
                             },
                             success: function(response) {
-                                Swal.fire(
-                                    'Cancelled!',
-                                    'The order details have been cancelled.',
-                                    'success'
-                                ).then(() => {
-                                    location.reload();
-                                });
+                                if (response.success) {
+                                    Swal.fire(
+                                        'Cancelled!',
+                                        response.message,
+                                        'success'
+                                    ).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        response.message,
+                                        'error'
+                                    );
+                                }
                             },
-                            error: function() {
+                            error: function(xhr) {
                                 Swal.fire(
                                     'Error!',
+                                    xhr.responseJSON.message ||
                                     'There was an error cancelling the order details.',
                                     'error'
                                 );
@@ -189,6 +210,16 @@
             });
             $('.delete-btn').on('click', function() {
                 var id = $(this).data('id');
+                var status = $(this).data('status');
+
+                if (status === 'completed') {
+                    Swal.fire(
+                        'Cannot Delete',
+                        'Completed order details cannot be deleted.',
+                        'error'
+                    );
+                    return;
+                }
 
                 Swal.fire({
                     title: 'Are you sure?',
@@ -201,24 +232,34 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: `{{ route('purchase_orders_details.delete', '') }}/${id}`,
+                            url: "{{ route('purchase_orders_details.delete', ':id') }}"
+                                .replace(':id', id),
                             type: 'DELETE',
                             data: {
                                 _token: '{{ csrf_token() }}'
                             },
                             success: function(response) {
-                                Swal.fire(
-                                    'Deleted!',
-                                    'The order details have been deleted.',
-                                    'success'
-                                ).then(() => {
-                                    location.reload();
-                                });
+                                if (response.success) {
+                                    Swal.fire(
+                                        'Deleted!',
+                                        response.message,
+                                        'success'
+                                    ).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        response.message,
+                                        'error'
+                                    );
+                                }
                             },
-                            error: function() {
+                            error: function(xhr) {
                                 Swal.fire(
                                     'Error!',
-                                    'There was an error deleting the order details.',
+                                    xhr.responseJSON.message ||
+                                    'There was an error deleting the order detail.',
                                     'error'
                                 );
                             }

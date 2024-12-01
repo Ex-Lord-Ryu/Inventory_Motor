@@ -36,8 +36,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/purchase_orders/store', [App\Http\Controllers\PurchaseOrderController::class, 'store'])->name('purchase_orders.store')->middleware('superadmin', 'admin', 'finance');
     Route::get('/purchase_orders/edit/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'edit'])->name('purchase_orders.edit')->middleware('superadmin', 'admin', 'finance');
     Route::put('/purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'update'])->name('purchase_orders.update')->middleware('superadmin', 'admin', 'finance');
+    Route::get('/purchase-orders/{id}/details', [\App\Http\Controllers\PurchaseOrderController::class, 'getDetails'])->name('purchase-orders.details')->middleware('superadmin', 'admin', 'finance');
     Route::delete('/purchase_orders/delete/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'destroy'])->name('purchase_orders.delete')->middleware('superadmin', 'admin', 'finance');
-    Route::get('/purchase-orders/{id}/details', [\App\Http\Controllers\PurchaseOrderController::class, 'getDetails'])->name('purchase_orders.getDetails');
+    Route::patch('/purchase_orders/{id}/cancel', [App\Http\Controllers\PurchaseOrderController::class, 'cancel'])->name('purchase_orders.cancel')->middleware('superadmin', 'admin', 'finance');
+    Route::patch('/purchase_orders/{id}/complete', [App\Http\Controllers\PurchaseOrderController::class, 'complete'])->name('purchase_orders.complete')->middleware('superadmin', 'admin', 'finance');
 
     Route::get('/master_warna', [App\Http\Controllers\MasterWarnaController::class, 'index'])->name('master_warna.index')->middleware('superadmin', 'admin',);
     Route::get('/master_warna/create', [App\Http\Controllers\MasterWarnaController::class, 'create'])->name('master_warna.create')->middleware('superadmin', 'admin',);

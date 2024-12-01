@@ -32,36 +32,23 @@
                                         @endfor
                                     </select>
                                 </div>
-                                <div class="col-md-3">
-                                    <button type="submit" class="btn btn-primary">Filter</button>
-                                </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-md-12">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="orderMotors" name="tables[]"
-                                            value="orderMotors">
-                                        <label class="form-check-label" for="orderMotors">Order Motors</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="orderSpareParts" name="tables[]"
-                                            value="orderSpareParts">
-                                        <label class="form-check-label" for="orderSpareParts">Order Spare Parts</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="soldMotors" name="tables[]"
-                                            value="soldMotors">
-                                        <label class="form-check-label" for="soldMotors">Sold Motors</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="soldSpareParts" name="tables[]"
-                                            value="soldSpareParts">
-                                        <label class="form-check-label" for="soldSpareParts">Sold Spare Parts</label>
-                                    </div>
+                                    @foreach ($allTables as $table)
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="{{ $table }}"
+                                                name="tables[]" value="{{ $table }}"
+                                                {{ in_array($table, $tables) ? 'checked' : '' }}>
+                                            <label class="form-check-label"
+                                                for="{{ $table }}">{{ $tableNames[$table] }}</label>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary">Filter</button>
                                     <button type="submit" name="export" value="excel" class="btn btn-success">Export
                                         Excel</button>
                                     <button type="submit" name="export" value="pdf" class="btn btn-danger">Export
@@ -70,115 +57,95 @@
                             </div>
                         </form>
 
-                        @if (isset($reportData['orderMotors']) && count($reportData['orderMotors']) > 0)
-                            <h4>Order Motors</h4>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>User</th>
-                                        <th>Motor</th>
-                                        <th>Color</th>
-                                        <th>Frame Number</th>
-                                        <th>Engine Number</th>
-                                        <th>Quantity</th>
-                                        <th>Selling Price</th>
-                                        <th>Order Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($reportData['orderMotors'] as $orderMotor)
+                        @foreach ($allTables as $table)
+                            @if (in_array($table, $tables) && isset($reportData[$table]) && count($reportData[$table]) > 0)
+                                <h4>{{ $tableNames[$table] }}</h4>
+                                <table class="table table-bordered">
+                                    <thead>
                                         <tr>
-                                            <td>{{ $orderMotor->user->name }}</td>
-                                            <td>{{ $orderMotor->motor->nama_motor }}</td>
-                                            <td>{{ $orderMotor->warna->nama_warna }}</td>
-                                            <td>{{ $orderMotor->nomor_rangka }}</td>
-                                            <td>{{ $orderMotor->nomor_mesin }}</td>
-                                            <td>{{ $orderMotor->jumlah }}</td>
-                                            <td>{{ number_format($orderMotor->harga_jual, 2) }}</td>
-                                            <td>{{ $orderMotor->created_at }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
+                                            @switch($table)
+                                                @case('orderMotors')
+                                                    <th>User</th>
+                                                    <th>Motor</th>
+                                                    <th>Warna</th>
+                                                    <th>Nomor Rangka</th>
+                                                    <th>Nomor Mesin</th>
+                                                    <th>Quantity</th>
+                                                    <th>Harga Jual</th>
+                                                    <th>Tanggal Order</th>
+                                                @break
 
-                        @if (isset($reportData['orderSpareParts']) && count($reportData['orderSpareParts']) > 0)
-                            <h4>Order Spare Parts</h4>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>User</th>
-                                        <th>Spare Part</th>
-                                        <th>Quantity</th>
-                                        <th>Selling Price</th>
-                                        <th>Order Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($reportData['orderSpareParts'] as $orderSparePart)
-                                        <tr>
-                                            <td>{{ $orderSparePart->user->name }}</td>
-                                            <td>{{ $orderSparePart->sparePart->nama_spare_part }}</td>
-                                            <td>{{ $orderSparePart->jumlah }}</td>
-                                            <td>{{ number_format($orderSparePart->harga_jual, 2) }}</td>
-                                            <td>{{ $orderSparePart->created_at }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
+                                                @case('orderSpareParts')
+                                                    <th>User</th>
+                                                    <th>Spare Part</th>
+                                                    <th>Quantity</th>
+                                                    <th>Harga Jual</th>
+                                                    <th>Tanggal Order</th>
+                                                @break
 
-                        @if (isset($reportData['soldMotors']) && count($reportData['soldMotors']) > 0)
-                            <h4>Sold Motors</h4>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Motor</th>
-                                        <th>Color</th>
-                                        <th>Frame Number</th>
-                                        <th>Engine Number</th>
-                                        <th>Selling Price</th>
-                                        <th>Sold Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($reportData['soldMotors'] as $soldMotor)
-                                        <tr>
-                                            <td>{{ $soldMotor->motor->nama_motor }}</td>
-                                            <td>{{ $soldMotor->warna->nama_warna }}</td>
-                                            <td>{{ $soldMotor->nomor_rangka }}</td>
-                                            <td>{{ $soldMotor->nomor_mesin }}</td>
-                                            <td>{{ number_format($soldMotor->harga_jual, 2) }}</td>
-                                            <td>{{ $soldMotor->tanggal_terjual }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
+                                                @case('soldMotors')
+                                                    <th>Motor</th>
+                                                    <th>Warna</th>
+                                                    <th>Nomor Rangka</th>
+                                                    <th>Nomor Mesin</th>
+                                                    <th>Harga Jual</th>
+                                                    <th>Tanggal Terjual</th>
+                                                @break
 
-                        @if (isset($reportData['soldSpareParts']) && count($reportData['soldSpareParts']) > 0)
-                            <h4>Sold Spare Parts</h4>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Spare Part</th>
-                                        <th>Quantity</th>
-                                        <th>Selling Price</th>
-                                        <th>Sold Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($reportData['soldSpareParts'] as $soldSparePart)
-                                        <tr>
-                                            <td>{{ $soldSparePart->sparePart->nama_spare_part }}</td>
-                                            <td>{{ $soldSparePart->jumlah }}</td>
-                                            <td>{{ number_format($soldSparePart->harga_jual, 2) }}</td>
-                                            <td>{{ $soldSparePart->tanggal_terjual }}</td>
+                                                @case('soldSpareParts')
+                                                    <th>Spare Part</th>
+                                                    <th>Quantity</th>
+                                                    <th>Harga Jual</th>
+                                                    <th>Tanggal Terjual</th>
+                                                @break
+                                            @endswitch
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($reportData[$table] as $item)
+                                            <tr>
+                                                @switch($table)
+                                                    @case('orderMotors')
+                                                        <td>{{ $item->user->name }}</td>
+                                                        <td>{{ $item->motor['nama_motor'] ?? 'N/A' }}</td>
+                                                        <td>{{ $item->warna['nama_warna'] ?? 'N/A' }}</td>
+                                                        <td>{{ $item->nomor_rangka }}</td>
+                                                        <td>{{ $item->nomor_mesin }}</td>
+                                                        <td>{{ $item->jumlah }}</td>
+                                                        <td>{{ number_format($item->harga_jual, 2) }}</td>
+                                                        <td>{{ $item->created_at }}</td>
+                                                    @break
+
+                                                    @case('orderSpareParts')
+                                                        <td>{{ $item->user->name }}</td>
+                                                        <td>{{ $item->sparePart->nama_spare_part ?? 'N/A' }}</td>
+                                                        <td>{{ $item->jumlah }}</td>
+                                                        <td>{{ number_format($item->harga_jual, 2) }}</td>
+                                                        <td>{{ $item->created_at }}</td>
+                                                    @break
+
+                                                    @case('soldMotors')
+                                                        <td>{{ $item->motor['nama_motor'] ?? 'N/A' }}</td>
+                                                        <td>{{ $item->warna['nama_warna'] ?? 'N/A' }}</td>
+                                                        <td>{{ $item->nomor_rangka }}</td>
+                                                        <td>{{ $item->nomor_mesin }}</td>
+                                                        <td>{{ number_format($item->harga_jual, 2) }}</td>
+                                                        <td>{{ $item->tanggal_terjual }}</td>
+                                                    @break
+
+                                                    @case('soldSpareParts')
+                                                        <td>{{ $item->sparePart->nama_spare_part ?? 'N/A' }}</td>
+                                                        <td>{{ $item->jumlah }}</td>
+                                                        <td>{{ number_format($item->harga_jual, 2) }}</td>
+                                                        <td>{{ $item->tanggal_terjual }}</td>
+                                                    @break
+                                                @endswitch
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @endif
+                        @endforeach
                     </div>
                 </div>
             </div>

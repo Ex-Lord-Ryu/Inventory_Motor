@@ -6,16 +6,97 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
     <style>
-        .table-hover tbody tr:hover {
-            background-color: rgba(0, 123, 255, 0.1);
+        .custom-btn-group {
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .custom-btn-group .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            border-radius: 0.2rem;
+            transition: all 0.3s ease;
+            flex: 0 0 auto;
+        }
+        
+        .btn-group .btn i {
+            margin-right: 3px;
+        }
+        
+        .btn-sm {
+            min-width: 100px; /* Adjust this value as needed */
+            text-align: center;
         }
 
         .action-btn {
-            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.3),
+                    transparent);
+            transition: all 0.6s;
+        }
+
+        .action-btn:hover:before {
+            left: 100%;
         }
 
         .action-btn:hover {
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .edit-btn {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .cancel-btn {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .complete-btn {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .edit-btn:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .cancel-btn:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+        }
+
+        .complete-btn:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+            border-color: #c82333;
         }
 
         .pagination {
@@ -123,17 +204,42 @@
                                             <td>{{ $order->updated_at->format('Y-m-d H:i') }}</td>
                                             <td>{{ $order->status }}</td>
                                             <td>
-                                                <a href="{{ route('purchase_orders.edit', $order->id) }}"
-                                                    class="btn btn-primary btn-sm action-btn edit-btn mr-1 edit-btn"><i
-                                                        class="fas fa-edit"></i> Edit</a>
-                                                <form action="{{ route('purchase_orders.delete', $order->id) }}"
-                                                    method="POST" style="display: inline-block;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="btn btn-danger btn-sm action-btn delete-btn"><i
-                                                            class="fas fa-trash"></i> Delete</button>
-                                                </form>
+                                                <div class="btn-group custom-btn-group" role="group" style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                                    @if ($order->status == 'pending')
+                                                        <button type="button" class="btn btn-primary btn-sm action-btn edit-btn"
+                                                            data-id="{{ $order->id }}" title="Edit"
+                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
+                                                            <i class="fas fa-edit" style="margin-right: 3px;"></i> Edit
+                                                        </button>
+                                                        <button type="button" class="btn btn-warning btn-sm action-btn cancel-btn"
+                                                            data-id="{{ $order->id }}" title="Cancel"
+                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
+                                                            <i class="fas fa-ban" style="margin-right: 3px;"></i> Cancel
+                                                        </button>
+                                                        <button type="button" class="btn btn-success btn-sm action-btn complete-btn"
+                                                            data-id="{{ $order->id }}" title="Complete"
+                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
+                                                            <i class="fas fa-check" style="margin-right: 3px;"></i> Complete
+                                                        </button>
+                                                    @elseif ($order->status == 'cancelled')
+                                                        <button type="button" class="btn btn-secondary btn-sm action-btn"
+                                                            disabled title="Cancelled"
+                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
+                                                            <i class="fas fa-ban" style="margin-right: 3px;"></i> Cancelled
+                                                        </button>
+                                                    @elseif ($order->status == 'completed')
+                                                        <button type="button" class="btn btn-success btn-sm action-btn"
+                                                            disabled title="Completed"
+                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
+                                                            <i class="fas fa-check" style="margin-right: 3px;"></i> Completed
+                                                        </button>
+                                                    @endif
+                                                    <button type="button" class="btn btn-danger btn-sm action-btn delete-btn"
+                                                        data-id="{{ $order->id }}" title="Delete"
+                                                        style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
+                                                        <i class="fas fa-trash" style="margin-right: 3px;"></i> Delete
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -164,11 +270,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Edit confirmation
-            $('.edit-btn').on('click', function(e) {
-                e.preventDefault();
-                var href = $(this).attr('href');
-
+            // Edit button
+            $('.edit-btn').on('click', function() {
+                var id = $(this).data('id');
                 Swal.fire({
                     title: 'Edit Purchase Order',
                     text: "Apakah Anda yakin ingin mengedit data purchase order ini?",
@@ -180,16 +284,15 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = href;
+                        window.location.href = "{{ route('purchase_orders.edit', ':id') }}"
+                            .replace(':id', id);
                     }
                 });
             });
 
-            // Delete confirmation
-            $('.delete-btn').on('click', function(e) {
-                e.preventDefault();
-                var form = $(this).closest('form');
-
+            // Delete button
+            $('.delete-btn').on('click', function() {
+                var id = $(this).data('id');
                 Swal.fire({
                     title: 'Hapus Purchase Order',
                     text: "Apakah Anda yakin ingin menghapus data purchase order ini?",
@@ -201,7 +304,159 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        form.submit();
+                        $.ajax({
+                            url: "{{ route('purchase_orders.delete', ':id') }}".replace(
+                                ':id', id),
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                _method: 'DELETE'
+                            },
+                            success: function(response) {
+                                Swal.fire('Deleted!', response.message, 'success').then(
+                                    () => {
+                                        location.reload();
+                                    });
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error!', xhr.responseJSON.message, 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            function attachDeleteListener(button) {
+                button.on('click', function() {
+                    var id = $(this).data('id');
+                    Swal.fire({
+                        title: 'Hapus Purchase Order',
+                        text: "Apakah Anda yakin ingin menghapus data purchase order ini?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                url: "{{ route('purchase_orders.delete', ':id') }}"
+                                    .replace(':id', id),
+                                type: 'POST',
+                                data: {
+                                    _token: '{{ csrf_token() }}',
+                                    _method: 'DELETE'
+                                },
+                                success: function(response) {
+                                    Swal.fire('Deleted!', response.message, 'success')
+                                        .then(() => {
+                                            location.reload();
+                                        });
+                                },
+                                error: function(xhr) {
+                                    Swal.fire('Error!', xhr.responseJSON.message,
+                                        'error');
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+
+            // Cancel button
+            // Cancel button
+            $('.cancel-btn').on('click', function() {
+                var id = $(this).data('id');
+                var btn = $(this);
+                Swal.fire({
+                    title: 'Cancel Purchase Order',
+                    text: "Are you sure you want to cancel this purchase order?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, cancel it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "{{ route('purchase_orders.cancel', ':id') }}".replace(
+                                ':id', id),
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                _method: 'PATCH'
+                            },
+                            success: function(response) {
+                                Swal.fire('Cancelled!', response.message, 'success')
+                                    .then(() => {
+                                        // Update button group
+                                        var btnGroup = btn.closest('.btn-group');
+                                        btnGroup.html(`
+                            <button type="button" class="btn btn-secondary btn-sm action-btn" disabled title="Cancelled">
+                                <i class="fas fa-ban"></i> Cancelled
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm action-btn delete-btn" data-id="${id}" title="Delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        `);
+                                        // Attach delete listener to new delete button
+                                        attachDeleteListener(btnGroup.find(
+                                            '.delete-btn'));
+                                    });
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error!', xhr.responseJSON.message, 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Complete button
+            $('.complete-btn').on('click', function() {
+                var id = $(this).data('id');
+                var btn = $(this);
+                Swal.fire({
+                    title: 'Complete Purchase Order',
+                    text: "Are you sure you want to mark this purchase order as completed?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, complete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "{{ route('purchase_orders.complete', ':id') }}".replace(
+                                ':id', id),
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                _method: 'PATCH'
+                            },
+                            success: function(response) {
+                                Swal.fire('Completed!', response.message, 'success')
+                                    .then(() => {
+                                        // Update button group
+                                        var btnGroup = btn.closest('.btn-group');
+                                        btnGroup.html(`
+                            <button type="button" class="btn btn-success btn-sm action-btn" disabled title="Completed">
+                                <i class="fas fa-check"></i> Completed
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm action-btn delete-btn" data-id="${id}" title="Delete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        `);
+                                        // Attach delete listener to new delete button
+                                        attachDeleteListener(btnGroup.find(
+                                            '.delete-btn'));
+                                    });
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error!', xhr.responseJSON.message, 'error');
+                            }
+                        });
                     }
                 });
             });

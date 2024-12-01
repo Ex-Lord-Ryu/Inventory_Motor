@@ -67,6 +67,7 @@
 
 @push('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cleave.js/1.6.0/cleave.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
     <script>
         $(document).ready(function() {
             var hargaBeliCleave = new Cleave('#harga_beli', {
@@ -96,8 +97,61 @@
                 }
             });
 
-            $('form').on('submit', function() {
-                $('#harga_jual').val(hargaJualCleave.getRawValue());
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Mengupdate Data',
+                    text: 'Apakah Anda yakin ingin mengupdate data ini?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Update!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Mengupdate...',
+                            text: 'Mohon tunggu sebentar.',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            allowEnterKey: false,
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Set raw value for harga_jual
+                        $('#harga_jual').val(hargaJualCleave.getRawValue());
+
+                        // Submit form
+                        $.ajax({
+                            url: $(this).attr('action'),
+                            method: 'POST',
+                            data: $(this).serialize(),
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Data stock berhasil diupdate.',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.href = '{{ route('stock.index') }}';
+                                });
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Terjadi kesalahan saat mengupdate data.'
+                                });
+                            }
+                        });
+                    }
+                });
             });
         });
     </script>

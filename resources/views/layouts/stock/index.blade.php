@@ -77,15 +77,6 @@
                                         <input type="text" name="search" class="form-control" placeholder="Search..."
                                             value="{{ request('search') }}">
                                     </div>
-                                    <div class="form-group col-md-3">
-                                        <select name="type" class="form-control select2">
-                                            <option value="">All Types</option>
-                                            <option value="in" {{ request('type') == 'in' ? 'selected' : '' }}>In
-                                            </option>
-                                            <option value="out" {{ request('type') == 'out' ? 'selected' : '' }}>Out
-                                            </option>
-                                        </select>
-                                    </div>
                                     <div class="col-md-2">
                                         <button class="btn btn-primary btn-block" type="submit">Search</button>
                                     </div>
@@ -109,7 +100,8 @@
                                                 <th>No</th>
                                                 <th>Motor Name</th>
                                                 <th>Warna</th>
-                                                <th>Type</th>
+                                                <th>Jumlah</th>
+                                                <th>Harga Jual</th>
                                                 <th>Tanggal Masuk</th>
                                                 <th>Action</th>
                                             </tr>
@@ -120,9 +112,8 @@
                                                     <td>{{ $index + 1 }}</td>
                                                     <td>{{ $motor->motor->nama_motor }}</td>
                                                     <td>{{ $motor->warna->nama_warna ?? 'N/A' }}</td>
-                                                    <td><span
-                                                            class="badge badge-{{ $motor->type == 'in' ? 'success' : 'danger' }}">{{ $motor->type }}</span>
-                                                    </td>
+                                                    <td>{{ $motor->jumlah }}</td>
+                                                    <td>Rp {{ number_format($motor->harga_jual, 0, ',', '.') }}</td>
                                                     <td>{{ $motor->created_at->format('Y-m-d H:i') }}</td>
                                                     <td>
                                                         <button type="button" class="btn btn-info btn-sm"
@@ -134,7 +125,8 @@
                                                             class="btn btn-warning btn-sm">
                                                             <i class="fas fa-edit"></i> Update Harga
                                                         </a>
-                                                        <a href="{{ route('stock.input-motor') }}" class="btn btn-primary btn-sm">Input Data</a>
+                                                        <a href="{{ route('stock.input-motor') }}"
+                                                            class="btn btn-primary btn-sm">Input Data</a>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -159,7 +151,8 @@
                                             <tr>
                                                 <th>No</th>
                                                 <th>Spare Part Name</th>
-                                                <th>Type</th>
+                                                <th>Jumlah</th>
+                                                <th>Harga Jual</th>
                                                 <th>Tanggal Masuk</th>
                                                 <th>Action</th>
                                             </tr>
@@ -169,9 +162,8 @@
                                                 <tr>
                                                     <td>{{ $index + 1 }}</td>
                                                     <td>{{ $sparePart->sparePart->nama_spare_part }}</td>
-                                                    <td><span
-                                                            class="badge badge-{{ $sparePart->type == 'in' ? 'success' : 'danger' }}">{{ $sparePart->type }}</span>
-                                                    </td>
+                                                    <td>{{ $sparePart->jumlah }}</td>
+                                                    <td>Rp {{ number_format($sparePart->harga_jual, 0, ',', '.') }}</td>
                                                     <td>{{ $sparePart->created_at->format('Y-m-d H:i') }}</td>
                                                     <td>
                                                         <button type="button" class="btn btn-info btn-sm"
@@ -234,12 +226,6 @@
                                         <td>{{ $motor->order }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Type</th>
-                                        <td><span
-                                                class="badge badge-{{ $motor->type == 'in' ? 'success' : 'danger' }}">{{ $motor->type }}</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
                                         <th>Jumlah</th>
                                         <td>{{ $motor->jumlah }}</td>
                                     </tr>
@@ -300,12 +286,6 @@
                                         <td>{{ $sparePart->order }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Type</th>
-                                        <td><span
-                                                class="badge badge-{{ $sparePart->type == 'in' ? 'success' : 'danger' }}">{{ $sparePart->type }}</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
                                         <th>Jumlah</th>
                                         <td>{{ $sparePart->jumlah }}</td>
                                     </tr>
@@ -343,6 +323,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         $(document).ready(function() {
             $('.select2').select2({

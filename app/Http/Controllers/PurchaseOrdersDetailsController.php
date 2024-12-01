@@ -195,30 +195,36 @@ class PurchaseOrdersDetailsController extends Controller
         DB::beginTransaction();
 
         try {
-            Log::info("Attempting to cancel PurchaseOrderDetail with ID: " . $id);
-
             $detail = PurchaseOrdersDetails::findOrFail($id);
             $invoice = $detail->invoice;
 
-            Log::info("Found PurchaseOrderDetail with invoice: " . $invoice);
+            // Check if the associated PurchaseOrder is already completed
+            $purchaseOrder = PurchaseOrder::where('invoice', $invoice)->firstOrFail();
+            if ($purchaseOrder->status === 'completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot cancel a completed Purchase Order.'
+                ], 400);
+            }
 
             // Update semua detail dengan invoice yang sama
-            $updatedDetailsCount = PurchaseOrdersDetails::where('invoice', $invoice)->update(['status' => 'cancelled']);
-            Log::info("Updated {$updatedDetailsCount} PurchaseOrderDetails records");
+            PurchaseOrdersDetails::where('invoice', $invoice)->update(['status' => 'cancelled']);
 
             // Update status PurchaseOrder menjadi cancelled
-            $purchaseOrder = PurchaseOrder::where('invoice', $invoice)->firstOrFail();
             $purchaseOrder->update(['status' => 'cancelled']);
-            Log::info("Updated PurchaseOrder with invoice: " . $invoice);
 
             DB::commit();
-            Log::info("Transaction committed successfully");
 
-            return response()->json(['success' => true, 'message' => 'All order details and the associated Purchase Order with invoice ' . $invoice . ' have been canceled.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'All order details and the associated Purchase Order with invoice ' . $invoice . ' have been canceled.'
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error cancelling order: " . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'An error occurred while canceling the order: ' . $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while canceling the order: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -287,17 +293,64 @@ class PurchaseOrdersDetailsController extends Controller
             })
             ->values();
     }
+    public function getDetails($id)
+    {
+        try {
+            $purchaseOrder = PurchaseOrder::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'vendor_name' => $purchaseOrder->distributor->nama_distributor ?? 'N/A',
+                'status' => $purchaseOrder->status
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching purchase order details: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil detail Purchase Order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function destroy($id)
     {
-        $purchaseOrderDetail = PurchaseOrdersDetails::findOrFail($id);
-        $deletedOrder = $purchaseOrderDetail->order;
+        DB::beginTransaction();
 
-        $purchaseOrderDetail->delete();
+        try {
+            $detail = PurchaseOrdersDetails::findOrFail($id);
+            $invoice = $detail->invoice;
 
-        // Logika pengurutan jika dibutuhkan
-        PurchaseOrdersDetails::where('order', '>', $deletedOrder)->decrement('order');
+            // Check if the associated PurchaseOrder is already completed
+            $purchaseOrder = PurchaseOrder::where('invoice', $invoice)->firstOrFail();
+            if ($purchaseOrder->status === 'completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete a completed Purchase Order detail.'
+                ], 400);
+            }
 
-        return redirect()->route('purchase_orders_details.index')->with('message', 'Purchase Order Detail deleted successfully.');
+            // Delete the detail
+            $detail->delete();
+
+            // Check if there are any remaining details for this invoice
+            $remainingDetails = PurchaseOrdersDetails::where('invoice', $invoice)->count();
+
+            // If no remaining details, delete the PurchaseOrder as well
+            if ($remainingDetails === 0) {
+                $purchaseOrder->delete();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Purchase Order detail has been deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while deleting the order detail: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

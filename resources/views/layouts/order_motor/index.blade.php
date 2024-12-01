@@ -75,7 +75,7 @@
                     <div class="card-body">
                         <p><strong>User:</strong> {{ Auth::user()->name }}</p>
                         <p><strong>Role:</strong> {{ Auth::user()->role }}</p>
-                        <form action="{{ route('order_motor.store') }}" method="POST">
+                        <form id="orderForm" action="{{ route('order_motor.store') }}" method="POST">
                             @csrf
                             <div class="form-group">
                                 <label for="motor_id">Motor</label>
@@ -231,6 +231,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
     <script>
         $(document).ready(function() {
             if ($(".main-sidebar").length) {
@@ -326,5 +327,70 @@
                 new bootstrap.Modal(modal);
             });
         }
+
+        // Add this new code for form submission
+        $('form').on('submit', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Menyimpan Data',
+                text: 'Apakah Anda yakin ingin menyimpan order ini?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Menyimpan...',
+                        text: 'Mohon tunggu sebentar.',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        allowEnterKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Submit form
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Order berhasil disimpan.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                           console.log('Error response:', xhr.responseJSON);
+
+                            let errorMessage = 'Terjadi kesalahan saat menyimpan order.';
+
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+
+                            console.log('Error message:', errorMessage);
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: errorMessage
+                            });
+                        }
+                    });
+                }
+            });
+        });
     </script>
 @endpush

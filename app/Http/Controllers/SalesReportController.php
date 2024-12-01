@@ -11,35 +11,43 @@ use Carbon\Carbon;
 use App\Exports\SalesReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class SalesReportController extends Controller
 {
+    protected $tableNames = [
+        'orderMotors' => 'Order Motors',
+        'orderSpareParts' => 'Order Spare Parts',
+        'soldMotors' => 'Sold Motors',
+        'soldSpareParts' => 'Sold Spare Parts'
+    ];
+
     public function index(Request $request)
     {
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
-        $tables = $request->input('tables', ['orderMotors', 'orderSpareParts', 'soldMotors', 'soldSpareParts']);
+        $tables = $request->input('tables', []);
         $export = $request->input('export');
 
-        // Inisialisasi $reportData dengan array kosong untuk semua tabel
-        $reportData = [
-            'orderMotors' => [],
-            'orderSpareParts' => [],
-            'soldMotors' => [],
-            'soldSpareParts' => []
-        ];
+        $reportData = [];
 
-        // Ambil data hanya untuk tabel yang dipilih
-        $selectedData = $this->getReportData($month, $year, $tables);
-
-        // Gabungkan data yang diambil dengan array kosong yang sudah diinisialisasi
-        $reportData = array_merge($reportData, $selectedData);
+        if (!empty($tables)) {
+            $reportData = $this->getReportData($month, $year, $tables);
+        }
 
         if ($export) {
             return $this->export($export, $reportData, $tables, $month, $year);
         }
 
-        return view('layouts.sales_report.index', compact('reportData', 'month', 'year', 'tables'));
+        $allTables = array_keys($this->tableNames);
+        return view('layouts.sales_report.index', [
+            'reportData' => $reportData,
+            'month' => $month,
+            'year' => $year,
+            'tables' => $tables,
+            'allTables' => $allTables,
+            'tableNames' => $this->tableNames
+        ]);
     }
 
     protected function getReportData($month, $year, $tables)
@@ -81,9 +89,11 @@ class SalesReportController extends Controller
         $fileName = "sales_report_{$year}_{$month}";
 
         if ($type === 'excel') {
-            return Excel::download(new SalesReportExport($reportData, $tables, $month, $year), $fileName . '.xlsx');
+            return Excel::download(new SalesReportExport($reportData, $tables, $month, $year, $this->tableNames), $fileName . '.xlsx');
         } elseif ($type === 'pdf') {
             $pdf = PDF::loadView('layouts.sales_report.pdf', compact('reportData', 'tables', 'month', 'year'));
+            // Tambahkan $this->tableNames ke view secara eksplisit
+            $pdf->setOption('tableNames', $this->tableNames);
             return $pdf->download($fileName . '.pdf');
         }
     }
@@ -92,23 +102,22 @@ class SalesReportController extends Controller
     {
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
-        $tables = $request->input('tables', ['orderMotors', 'orderSpareParts', 'soldMotors', 'soldSpareParts']);
+        $tables = $request->input('tables', array_keys($this->tableNames));
 
         $reportData = $this->getReportData($month, $year, $tables);
 
-        return Excel::download(new SalesReportExport($reportData, $tables, $month, $year), "sales_report_{$year}_{$month}.xlsx");
+        return Excel::download(new SalesReportExport($reportData, $tables, $month, $year, $this->tableNames), "sales_report_{$year}_{$month}.xlsx");
     }
-
 
     public function exportPdf(Request $request)
     {
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
-        $tables = $request->input('tables', ['orderMotors', 'orderSpareParts', 'soldMotors', 'soldSpareParts']);
+        $tables = $request->input('tables', array_keys($this->tableNames));
 
         $reportData = $this->getReportData($month, $year, $tables);
 
-        $pdf = PDF::loadView('layouts.sales_report.pdf', compact('reportData', 'tables', 'month', 'year'));
-        return $pdf->download("layouts.sales_report_{$year}_{$month}.pdf");
+        $pdf = PDF::loadView('layouts.sales_report.pdf', compact('reportData', 'tables', 'month', 'year', 'tableNames'));
+        return $pdf->download("sales_report_{$year}_{$month}.pdf");
     }
 }

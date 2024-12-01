@@ -35,7 +35,6 @@ class PurchaseOrderController extends Controller
         return view('layouts.purchase_orders.index', compact('purchaseOrders', 'sortBy', 'order', 'search'));
     }
 
-
     public function create()
     {
         $vendors = Distributor::all();
@@ -63,7 +62,6 @@ class PurchaseOrderController extends Controller
 
         return redirect()->route('purchase_orders.index')->with('message', 'Purchase Order created successfully.');
     }
-
 
     public function edit($id)
     {
@@ -144,18 +142,91 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function cancel($id)
     {
-        $purchaseOrder = PurchaseOrder::findOrFail($id);
+        try {
+            DB::beginTransaction();
 
-        $deletedOrder = $purchaseOrder->order;
+            $purchaseOrder = PurchaseOrder::findOrFail($id);
 
-        $purchaseOrder->delete();
+            if ($purchaseOrder->status == 'completed') {
+                return response()->json(['message' => 'Completed orders cannot be cancelled.'], 400);
+            }
 
-        PurchaseOrder::where('order', '>', $deletedOrder)
-            ->decrement('order');
+            if ($purchaseOrder->status == 'cancelled') {
+                return response()->json(['message' => 'This order is already cancelled.'], 400);
+            }
 
-        return redirect()->route('purchase_orders.index')->with('message', 'Purchase Order berhasil dihapus.');
+            $purchaseOrder->update(['status' => 'cancelled']);
+
+            PurchaseOrdersDetails::where('invoice', $purchaseOrder->invoice)
+                ->update(['status' => 'cancelled']);
+
+            DB::commit();
+
+            return response()->json(['message' => 'Purchase Order cancelled successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to cancel Purchase Order: ' . $e->getMessage()], 500);
+        }
     }
 
+    public function complete($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $purchaseOrder = PurchaseOrder::findOrFail($id);
+
+            if ($purchaseOrder->status == 'completed') {
+                return response()->json(['message' => 'This order is already completed.'], 400);
+            }
+
+            if ($purchaseOrder->status == 'cancelled') {
+                return response()->json(['message' => 'Cancelled orders cannot be completed.'], 400);
+            }
+
+            $purchaseOrder->update(['status' => 'completed']);
+
+            PurchaseOrdersDetails::where('invoice', $purchaseOrder->invoice)
+                ->update(['status' => 'completed']);
+
+            // Call StockController to add items to stock
+            $stockController = new StockController();
+            $stockController->addToStock($purchaseOrder->invoice);
+
+            DB::commit();
+
+            return response()->json(['message' => 'Purchase Order completed successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to complete Purchase Order: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $purchaseOrder = PurchaseOrder::findOrFail($id);
+
+            $deletedOrder = $purchaseOrder->order;
+
+            // Delete associated PurchaseOrdersDetails
+            PurchaseOrdersDetails::where('invoice', $purchaseOrder->invoice)->delete();
+
+            $purchaseOrder->delete();
+
+            PurchaseOrder::where('order', '>', $deletedOrder)
+                ->decrement('order');
+
+            DB::commit();
+
+            return redirect()->route('purchase_orders.index')->with('message', 'Purchase Order berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('purchase_orders.index')->with('error', 'Gagal menghapus Purchase Order: ' . $e->getMessage());
+        }
+    }
 }

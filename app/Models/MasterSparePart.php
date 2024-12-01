@@ -13,7 +13,7 @@ class MasterSparePart extends Model
 
     protected $fillable = [
         'nama_spare_part',
-        'units_per_box',
+        'unit_satuan',
         'order',
     ];
 }

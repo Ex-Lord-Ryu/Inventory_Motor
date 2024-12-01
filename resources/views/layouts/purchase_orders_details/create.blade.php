@@ -764,18 +764,19 @@
                 const poId = $(this).val();
                 if (poId) {
                     $.ajax({
-                        url: `/purchase-orders/${poId}/details`, // Pastikan ini sesuai dengan route yang Anda definisikan
+                        url: `/purchase-orders/${poId}/details`,
                         method: 'GET',
                         success: function(response) {
+                            console.log('Response received:', response);
                             if (response.success) {
                                 $('#vendor_name').text(response.vendor_name);
                                 $('#po_status').text(response.status);
                             } else {
+                                console.error('Error in response:', response.message);
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Oops...',
-                                    text: response.message ||
-                                        'Terjadi kesalahan saat mengambil detail Purchase Order'
+                                    text: response.message || 'Terjadi kesalahan saat mengambil detail Purchase Order'
                                 });
                             }
                         },

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
 use App\Models\SoldSparePart;
 use App\Models\StockSparePart;
+use Illuminate\Support\Carbon;
 use App\Models\MasterSparePart;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -27,37 +28,31 @@ class StockController extends Controller
         if ($request->has('search')) {
             $search = '%' . $request->search . '%';
             $motorSearchCondition = function ($q) use ($search) {
-                $q->where('type', 'like', $search)
-                    ->orWhereHas('motor', function ($q) use ($search) {
-                        $q->where('nama_motor', 'like', $search);
-                    });
+                $q->whereHas('motor', function ($q) use ($search) {
+                    $q->where('nama_motor', 'like', $search);
+                })->orWhereHas('warna', function ($q) use ($search) {
+                    $q->where('nama_warna', 'like', $search);
+                });
             };
             $sparePartSearchCondition = function ($q) use ($search) {
-                $q->where('type', 'like', $search)
-                    ->orWhereHas('sparePart', function ($q) use ($search) {
-                        $q->where('nama_spare_part', 'like', $search);
-                    });
+                $q->whereHas('sparePart', function ($q) use ($search) {
+                    $q->where('nama_spare_part', 'like', $search);
+                });
             };
 
             $query->where($motorSearchCondition);
             $sparePartQuery->where($sparePartSearchCondition);
         }
 
-        if ($request->has('type') && in_array($request->type, ['in', 'out'])) {
-            $query->where('type', $request->type);
-            $sparePartQuery->where('type', $request->type);
-        }
-
         $motorStocks = $query->with(['motor', 'warna'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Menggabungkan stok motor dengan nama dan warna yang sama, hanya untuk tipe 'in'
         $motors = $motorStocks->groupBy(function ($item) {
             return $item->motor->nama_motor . '-' . ($item->warna->nama_warna ?? 'N/A');
         })->map(function ($group) {
             $first = $group->first();
-            $first->jumlah = $group->where('type', 'in')->count(); // Hitung jumlah hanya untuk tipe 'in'
+            $first->jumlah = $group->count();
             return $first;
         })->values();
 
@@ -304,11 +299,65 @@ class StockController extends Controller
         }
     }
 
-    public function soldItems()
+    public function soldItems(Request $request)
     {
-        $soldMotors = SoldMotor::with(['motor', 'warna'])->orderBy('tanggal_terjual', 'desc')->get();
-        $soldSpareParts = SoldSparePart::with('sparePart')->orderBy('tanggal_terjual', 'desc')->get();
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
 
-        return view('layouts.stock.sold-items', compact('soldMotors', 'soldSpareParts'));
+        $month = $request->input('month', $currentMonth);
+        $year = $request->input('year', $currentYear);
+
+        $query = SoldMotor::with(['motor', 'warna']);
+        $sparePartQuery = SoldSparePart::with('sparePart');
+
+        // Filter by month and year
+        $query->whereMonth('tanggal_terjual', $month)
+            ->whereYear('tanggal_terjual', $year);
+        $sparePartQuery->whereMonth('tanggal_terjual', $month)
+            ->whereYear('tanggal_terjual', $year);
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('motor', function ($q) use ($search) {
+                    $q->where('nama_motor', 'like', "%{$search}%");
+                })
+                    ->orWhereHas('warna', function ($q) use ($search) {
+                        $q->where('nama_warna', 'like', "%{$search}%");
+                    })
+                    ->orWhere('nomor_rangka', 'like', "%{$search}%")
+                    ->orWhere('nomor_mesin', 'like', "%{$search}%")
+                    ->orWhere('tanggal_terjual', 'like', "%{$search}%");
+            });
+
+            $sparePartQuery->where(function ($q) use ($search) {
+                $q->whereHas('sparePart', function ($q) use ($search) {
+                    $q->where('nama_spare_part', 'like', "%{$search}%");
+                })
+                    ->orWhere('tanggal_terjual', 'like', "%{$search}%");
+            });
+        }
+
+        $soldMotors = $query->orderBy('tanggal_terjual', 'desc')->get();
+        $soldSpareParts = $sparePartQuery->orderBy('tanggal_terjual', 'desc')->get();
+
+        $months = [
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December'
+        ];
+        $years = range(date('Y'), date('Y') - 10);
+
+        return view('layouts.stock.sold-items', compact('soldMotors', 'soldSpareParts', 'months', 'years', 'month', 'year'));
     }
 }

@@ -77,7 +77,7 @@ class OrderSparePartController extends Controller
             Log::info('Request data validated successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Validation failed: ' . json_encode($e->errors()));
-            return redirect()->back()->withErrors($e->errors())->withInput();
+            return response()->json(['message' => $e->errors()], 422);
         }
 
         DB::beginTransaction();
@@ -85,10 +85,16 @@ class OrderSparePartController extends Controller
         try {
             $stockSparePart = StockSparePart::where('spare_part_id', $request->spare_part_id)
                 ->where('type', 'in')
+                ->where('jumlah', '>', 0)
+                ->orderBy('created_at', 'asc')
                 ->first();
 
             if (!$stockSparePart || $stockSparePart->jumlah < $request->jumlah) {
                 throw new \Exception('Not enough stock available.');
+            }
+            
+            if ($stockSparePart->harga_jual === null) {
+                throw new \Exception('Selling price is not set for this spare part.');
             }
 
             $orderData = [
@@ -125,7 +131,7 @@ class OrderSparePartController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error in OrderSparePartController@store: ' . $e->getMessage());
-            return redirect()->back()->with('error', $e->getMessage())->withInput();
+            return response()->json(['message' => $e->getMessage()], 400);
         }
     }
 }
