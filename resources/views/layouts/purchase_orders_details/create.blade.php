@@ -447,14 +447,14 @@
                 <input type="hidden" name="${type}_prices[]" value="${item.price}">
                 <div class="col-md-4">${item.name}</div>
                 <div class="col-md-2">
-                    <input type="number" class="form-control ${type}-quantity" value="${item.quantity}" min="1">
+                    <input type="number" class="form-control ${type}-quantity" value="${item.quantity}" min="1" readonly>
                 </div>
                 <div class="col-md-3">
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <span class="input-group-text">Rp</span>
                         </div>
-                        <input type="text" class="form-control ${type}-price" value="${formatNumber(item.price)}">
+                        <input type="text" class="form-control ${type}-price" value="${formatNumber(item.price)}" readonly>
                     </div>
                 </div>
                 <div class="col-md-3">
