@@ -94,7 +94,7 @@
                                 <form action="{{ route('master_spare_parts.index') }}" method="GET" class="d-flex">
                                     <div class="input-group">
                                         <input type="text" name="search" class="form-control"
-                                            placeholder="Cari Berdasarkan ID..." value="{{ request('search') }}">
+                                            placeholder="Search..." value="{{ request('search') }}">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i>
                                                 Search</button>

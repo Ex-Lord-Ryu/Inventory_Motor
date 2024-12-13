@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use App\Models\user_management;
 use Illuminate\Http\Request;
 
@@ -12,14 +16,25 @@ class user_managementController extends Controller
      */
     public function index(Request $request)
     {
-        //
-        $search = $request->get('search');
+        $sortBy = $request->input('sortBy', 'id'); // default sort by id
+        $order = $request->input('order', 'asc');  // default order ascending
+        $search = $request->input('search');
+    
+        $query = User::query();
+    
+        // Add search functionality
         if ($search) {
-            $data['user_management'] = user_management::where('id', 'like', "%{$search}%")->get();
-        } else {
-            $data['user_management'] = user_management::all();
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('role', 'like', "%{$search}%");
         }
-        return view('layouts.user_management.index', $data);
+    
+        // Add sorting
+        $query->orderBy($sortBy, $order);
+    
+        $user_management = $query->paginate(5)->appends($request->query());
+    
+        return view('layouts.user_management.index', compact('user_management', 'sortBy', 'order'));
     }
 
     /**
@@ -28,6 +43,7 @@ class user_managementController extends Controller
     public function create()
     {
         //
+        return view('layouts.user_management.create');
     }
 
     /**
@@ -35,7 +51,33 @@ class user_managementController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|string|in:superadmin,admin,operasional,finance,sales',
+        ]);
+    
+        try {
+            $user = User::create([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'password' => Hash::make($validatedData['password']),
+                'role' => $validatedData['role'],
+                'email_verified_at' => Carbon::now(),
+            ]);
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully.'
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('User creation error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create user: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -71,9 +113,22 @@ class user_managementController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(user_management $user_management)
+    public function destroy($id)
     {
-        //
-        $user_management->delete();
+        try {
+            $user = User::findOrFail($id);
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully.'
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('User deletion error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete user: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -5,30 +5,30 @@
 @push('style')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+@endpush
+
+@section('content')
     <style>
         .custom-btn-group {
             display: flex;
             justify-content: flex-start;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 5px;
         }
-        
+
         .custom-btn-group .btn {
             padding: 0.25rem 0.5rem;
             font-size: 0.75rem;
             line-height: 1.5;
             border-radius: 0.2rem;
             transition: all 0.3s ease;
-            flex: 0 0 auto;
+            flex: 1 1 auto;
+            min-width: 100px;
+            text-align: center;
         }
-        
+
         .btn-group .btn i {
             margin-right: 3px;
-        }
-        
-        .btn-sm {
-            min-width: 100px; /* Adjust this value as needed */
-            text-align: center;
         }
 
         .action-btn {
@@ -107,10 +107,81 @@
             font-size: 0.8em;
             margin-left: 5px;
         }
-    </style>
-@endpush
 
-@section('content')
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-wrapper {
+            min-width: 1500px;
+        }
+
+        .table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .table th:nth-child(1) {
+            width: 85px;
+        }
+
+        /* ID column */
+        .table th:nth-child(2) {
+            width: 150px;
+        }
+
+        /* Invoice column */
+        .table th:nth-child(3) {
+            width: 250px;
+        }
+
+        /* Vendor column */
+        .table th:nth-child(4),
+        .table th:nth-child(5) {
+            width: 180px;
+        }
+
+        /* Created/Updated At */
+        .table th:nth-child(6) {
+            width: 150px;
+        }
+
+        /* Status column */
+        .table th:nth-child(7) {
+            width: auto;
+        }
+
+        @media (max-width: 992px) {
+            .custom-btn-group {
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+                flex-wrap: nowrap;
+            }
+
+            .custom-btn-group .btn {
+                flex: 0 1 auto;
+                margin-right: 5px;
+                margin-bottom: 5px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .custom-btn-group {
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+            }
+
+            .custom-btn-group .btn {
+                flex: 0 1 auto;
+                margin-right: 5px;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+
     <div class="main-content">
         <section class="section">
             <div class="section-header">
@@ -140,7 +211,7 @@
                                 <form action="{{ route('purchase_orders.index') }}" method="GET" class="d-flex w-100">
                                     <div class="input-group w-100">
                                         <input type="text" name="search" class="form-control"
-                                            placeholder="Search by Invoice..." value="{{ request('search') }}">
+                                            placeholder="Search..." value="{{ request('search') }}">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i>
                                                 Search</button>
@@ -154,109 +225,110 @@
                             </div>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>
-                                            ID
-                                            <a
-                                                href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'order', 'order' => $sortBy == 'order' && $order == 'asc' ? 'desc' : 'asc'])) }}">
-                                                <i
-                                                    class="fas fa-sort{{ $sortBy == 'order' ? ($order == 'asc' ? '-up' : '-down') : '' }} sort-icon"></i>
-                                            </a>
-                                        </th>
-                                        <th>
-                                            Invoice
-                                            <a
-                                                href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'invoice', 'order' => $sortBy == 'invoice' && $order == 'asc' ? 'desc' : 'asc'])) }}">
-                                                <i
-                                                    class="fas fa-sort{{ $sortBy == 'invoice' ? ($order == 'asc' ? '-up' : '-down') : '' }} sort-icon"></i>
-                                            </a>
-                                        </th>
-                                        <th>
-                                            Vendor
-                                            <a
-                                                href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'vendor_id', 'order' => $sortBy == 'vendor_id' && $order == 'asc' ? 'desc' : 'asc'])) }}">
-                                                <i
-                                                    class="fas fa-sort{{ $sortBy == 'vendor_id' ? ($order == 'asc' ? '-up' : '-down') : '' }} sort-icon"></i>
-                                            </a>
-                                        </th>
-                                        <th>Created At</th>
-                                        <th>Updated At</th>
-                                        <th>
-                                            Status
-                                            <a
-                                                href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'status', 'order' => $sortBy == 'status' && $order == 'asc' ? 'desc' : 'asc'])) }}">
-                                                <i
-                                                    class="fas fa-sort{{ $sortBy == 'status' ? ($order == 'asc' ? '-up' : '-down') : '' }} sort-icon"></i>
-                                            </a>
-                                        </th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($purchaseOrders as $order)
+                            <div class="table-wrapper">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="thead-light">
                                         <tr>
-                                            <td>{{ $order->order }}</td>
-                                            <td>{{ $order->invoice }}</td>
-                                            <td>{{ $order->vendor->name_Vendor }}</td>
-                                            <td>{{ $order->created_at->format('Y-m-d H:i') }}</td>
-                                            <td>{{ $order->updated_at->format('Y-m-d H:i') }}</td>
-                                            <td>{{ $order->status }}</td>
-                                            <td>
-                                                <div class="btn-group custom-btn-group" role="group" style="display: flex; flex-wrap: wrap; gap: 5px;">
-                                                    @if ($order->status == 'pending')
-                                                        <button type="button" class="btn btn-primary btn-sm action-btn edit-btn"
-                                                            data-id="{{ $order->id }}" title="Edit"
-                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
-                                                            <i class="fas fa-edit" style="margin-right: 3px;"></i> Edit
-                                                        </button>
-                                                        <button type="button" class="btn btn-warning btn-sm action-btn cancel-btn"
-                                                            data-id="{{ $order->id }}" title="Cancel"
-                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
-                                                            <i class="fas fa-ban" style="margin-right: 3px;"></i> Cancel
-                                                        </button>
-                                                        <button type="button" class="btn btn-success btn-sm action-btn complete-btn"
-                                                            data-id="{{ $order->id }}" title="Complete"
-                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
-                                                            <i class="fas fa-check" style="margin-right: 3px;"></i> Complete
-                                                        </button>
-                                                    @elseif ($order->status == 'cancelled')
-                                                        <button type="button" class="btn btn-secondary btn-sm action-btn"
-                                                            disabled title="Cancelled"
-                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
-                                                            <i class="fas fa-ban" style="margin-right: 3px;"></i> Cancelled
-                                                        </button>
-                                                    @elseif ($order->status == 'completed')
-                                                        <button type="button" class="btn btn-success btn-sm action-btn"
-                                                            disabled title="Completed"
-                                                            style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
-                                                            <i class="fas fa-check" style="margin-right: 3px;"></i> Completed
-                                                        </button>
-                                                    @endif
-                                                    <button type="button" class="btn btn-danger btn-sm action-btn delete-btn"
-                                                        data-id="{{ $order->id }}" title="Delete"
-                                                        style="min-width: 100px; text-align: center; padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1.5;">
-                                                        <i class="fas fa-trash" style="margin-right: 3px;"></i> Delete
-                                                    </button>
-                                                </div>
-                                            </td>
+                                            <th>
+                                                ID
+                                                <a
+                                                    href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'order', 'order' => $sortBy == 'order' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                    <i
+                                                        class="fas fa-sort{{ $sortBy == 'order' ? ($order == 'asc' ? '-up' : '-down') : '' }} sort-icon"></i>
+                                                </a>
+                                            </th>
+                                            <th>
+                                                Invoice
+                                                <a
+                                                    href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'invoice', 'order' => $sortBy == 'invoice' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                    <i
+                                                        class="fas fa-sort{{ $sortBy == 'invoice' ? ($order == 'asc' ? '-up' : '-down') : '' }} sort-icon"></i>
+                                                </a>
+                                            </th>
+                                            <th>
+                                                Vendor
+                                                <a
+                                                    href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'vendor_id', 'order' => $sortBy == 'vendor_id' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                    <i
+                                                        class="fas fa-sort{{ $sortBy == 'vendor_id' ? ($order == 'asc' ? '-up' : '-down') : '' }} sort-icon"></i>
+                                                </a>
+                                            </th>
+                                            <th>Created At</th>
+                                            <th>Updated At</th>
+                                            <th>
+                                                Status
+                                                <a
+                                                    href="{{ route('purchase_orders.index', array_merge(request()->all(), ['sortBy' => 'status', 'order' => $sortBy == 'status' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                    <i
+                                                        class="fas fa-sort{{ $sortBy == 'status' ? ($order == 'asc' ? '-up' : '-down') : '' }} sort-icon"></i>
+                                                </a>
+                                            </th>
+                                            <th>Action</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Pagination Section -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                <p class="text-sm text-gray-700 leading-5">
-                                    Showing {{ $purchaseOrders->firstItem() }} to {{ $purchaseOrders->lastItem() }} of
-                                    {{ $purchaseOrders->total() }} results
-                                </p>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($purchaseOrders as $order)
+                                            <tr>
+                                                <td>{{ $order->order }}</td>
+                                                <td>{{ $order->invoice }}</td>
+                                                <td>{{ $order->vendor->name_Vendor }}</td>
+                                                <td>{{ $order->created_at->format('Y-m-d H:i') }}</td>
+                                                <td>{{ $order->updated_at->format('Y-m-d H:i') }}</td>
+                                                <td>{{ $order->status }}</td>
+                                                <td>
+                                                    <div class="btn-group custom-btn-group" role="group">
+                                                        @if ($order->status == 'pending')
+                                                            <button type="button"
+                                                                class="btn btn-primary btn-sm action-btn edit-btn"
+                                                                data-id="{{ $order->id }}" title="Edit">
+                                                                <i class="fas fa-edit"></i> Edit
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-warning btn-sm action-btn cancel-btn"
+                                                                data-id="{{ $order->id }}" title="Cancel">
+                                                                <i class="fas fa-ban"></i> Cancel
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-success btn-sm action-btn complete-btn"
+                                                                data-id="{{ $order->id }}" title="Complete">
+                                                                <i class="fas fa-check"></i> Complete
+                                                            </button>
+                                                        @elseif ($order->status == 'cancelled')
+                                                            <button type="button"
+                                                                class="btn btn-secondary btn-sm action-btn" disabled
+                                                                title="Cancelled">
+                                                                <i class="fas fa-ban"></i> Cancelled
+                                                            </button>
+                                                        @elseif ($order->status == 'completed')
+                                                            <button type="button" class="btn btn-success btn-sm action-btn"
+                                                                disabled title="Completed">
+                                                                <i class="fas fa-check"></i> Completed
+                                                            </button>
+                                                        @endif
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm action-btn delete-btn"
+                                                            data-id="{{ $order->id }}" title="Delete">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
-                            <div>
-                                {{ $purchaseOrders->links() }}
+
+                            <!-- Pagination Section -->
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <p class="text-sm text-gray-700 leading-5">
+                                        Showing {{ $purchaseOrders->firstItem() }} to {{ $purchaseOrders->lastItem() }} of
+                                        {{ $purchaseOrders->total() }} results
+                                    </p>
+                                </div>
+                                <div>
+                                    {{ $purchaseOrders->links() }}
+                                </div>
                             </div>
                         </div>
                     </div>

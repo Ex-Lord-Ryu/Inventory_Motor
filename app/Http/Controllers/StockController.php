@@ -155,14 +155,16 @@ class StockController extends Controller
         $motorStocks = StockMotor::with(['motor', 'warna'])
             ->orderBy('created_at', 'desc')
             ->get();
-
+    
         $groupedMotors = $motorStocks->groupBy('motor.nama_motor');
-
+    
         $spareParts = StockSparePart::with('sparePart')
             ->orderBy('created_at', 'desc')
             ->get();
-
-        return view('layouts.stock.all_stock', compact('groupedMotors', 'spareParts'));
+    
+        $groupedSpareParts = $spareParts->groupBy('sparePart.nama_spare_part');
+    
+        return view('layouts.stock.all_stock', compact('groupedMotors', 'groupedSpareParts'));
     }
 
     public function addToStock($invoice)

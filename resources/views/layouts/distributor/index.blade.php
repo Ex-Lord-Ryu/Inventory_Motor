@@ -3,7 +3,51 @@
 @section('title', 'Master Vendor')
 
 @push('style')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+@endpush
+
+@section('content')
     <style>
+         .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-wrapper {
+            min-width: 1150px;
+        }
+
+        .table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        /* ID column */
+        .table th:nth-child(1) {
+            width: 85px;
+        }
+
+        /* Name Vendor */
+        .table th:nth-child(2) {
+            width: 300px;
+        }
+
+        /* Telepon column */
+        .table th:nth-child(3) {
+            width: 180px;
+        }
+
+        /* Alamat column */
+        .table th:nth-child(4) {
+            width: 350px;
+        }
+
+        /* Action column - will be flexible */
+        .table th:nth-child(5) {
+            width: auto;
+        }
+
         .table-hover tbody tr:hover {
             background-color: rgba(0, 123, 255, 0.1);
         }
@@ -20,11 +64,7 @@
             justify-content: flex-end;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
-@endpush
 
-@section('content')
     <div class="main-content">
         <section class="section">
             <div class="section-header">
@@ -56,7 +96,7 @@
                                 <form action="{{ route('distributor.index') }}" method="GET" class="d-flex">
                                     <div class="input-group">
                                         <input type="text" name="search" class="form-control"
-                                            placeholder="Cari Berdasarkan ID...">
+                                            placeholder="Search...">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i>
                                                 Search</button>
@@ -71,70 +111,72 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>
-                                            ID
-                                            <a
-                                                href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'id', 'order' => $sortBy == 'id' && $order == 'asc' ? 'desc' : 'asc'])) }}">
-                                                <i
-                                                    class="fas fa-sort{{ $sortBy == 'id' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
-                                            </a>
-                                        </th>
-                                        <th>
-                                            Name Vendor
-                                            <a
-                                                href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'name_Vendor', 'order' => $sortBy == 'name_Vendor' && $order == 'asc' ? 'desc' : 'asc'])) }}">
-                                                <i
-                                                    class="fas fa-sort{{ $sortBy == 'name_Vendor' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
-                                            </a>
-                                        </th>
-                                        <th>
-                                            Telepon
-                                            <a
-                                                href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'telepon', 'order' => $sortBy == 'telepon' && $order == 'asc' ? 'desc' : 'asc'])) }}">
-                                                <i
-                                                    class="fas fa-sort{{ $sortBy == 'telepon' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
-                                            </a>
-                                        </th>
-                                        <th>
-                                            Alamat
-                                            <a
-                                                href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'alamat', 'order' => $sortBy == 'alamat' && $order == 'asc' ? 'desc' : 'asc'])) }}">
-                                                <i
-                                                    class="fas fa-sort{{ $sortBy == 'alamat' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
-                                            </a>
-                                        </th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($distributor as $item)
+                            <div class="table-wrapper">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="thead-light">
                                         <tr>
-                                            <td>{{ $item->order }}</td>
-                                            <td>{{ $item->name_Vendor }}</td>
-                                            <td>{{ $item->telepon }}</td>
-                                            <td>{{ $item->alamat }}</td>
-                                            <td>
-                                                <a href="{{ route('distributor.edit', $item->id) }}"
-                                                    class="btn btn-primary btn-sm action-btn mr-1 edit-btn">
-                                                    <i class="fas fa-edit"></i> Edit
+                                            <th>
+                                                ID
+                                                <a
+                                                    href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'id', 'order' => $sortBy == 'id' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                    <i
+                                                        class="fas fa-sort{{ $sortBy == 'id' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
                                                 </a>
-                                                <form action="{{ route('distributor.delete', $item->id) }}" method="POST"
-                                                    style="display: inline-block;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="btn btn-danger btn-sm action-btn delete-btn">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </form>
-                                            </td>
+                                            </th>
+                                            <th>
+                                                Name Vendor
+                                                <a
+                                                    href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'name_Vendor', 'order' => $sortBy == 'name_Vendor' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                    <i
+                                                        class="fas fa-sort{{ $sortBy == 'name_Vendor' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
+                                                </a>
+                                            </th>
+                                            <th>
+                                                Telepon
+                                                <a
+                                                    href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'telepon', 'order' => $sortBy == 'telepon' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                    <i
+                                                        class="fas fa-sort{{ $sortBy == 'telepon' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
+                                                </a>
+                                            </th>
+                                            <th>
+                                                Alamat
+                                                <a
+                                                    href="{{ route('distributor.index', array_merge(request()->all(), ['sortBy' => 'alamat', 'order' => $sortBy == 'alamat' && $order == 'asc' ? 'desc' : 'asc'])) }}">
+                                                    <i
+                                                        class="fas fa-sort{{ $sortBy == 'alamat' ? ($order == 'asc' ? '-up' : '-down') : '' }}"></i>
+                                                </a>
+                                            </th>
+                                            <th>Action</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($distributor as $item)
+                                            <tr>
+                                                <td>{{ $item->order }}</td>
+                                                <td>{{ $item->name_Vendor }}</td>
+                                                <td>{{ $item->telepon }}</td>
+                                                <td>{{ $item->alamat }}</td>
+                                                <td>
+                                                    <a href="{{ route('distributor.edit', $item->id) }}"
+                                                        class="btn btn-primary btn-sm action-btn mr-1 edit-btn">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
+                                                    <form action="{{ route('distributor.delete', $item->id) }}"
+                                                        method="POST" style="display: inline-block;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="btn btn-danger btn-sm action-btn delete-btn">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <!-- Pagination Section -->

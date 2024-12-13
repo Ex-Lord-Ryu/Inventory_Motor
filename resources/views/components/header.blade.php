@@ -22,6 +22,9 @@
                 <a class="dropdown-item has-icon edit-profile" href="{{ route('profile.edit') }}">
                     <i class="fa fa-user"></i> Edit Profile
                 </a>
+                <a class="dropdown-item has-icon edit-profile" href="{{ route('profile.change-password') }}">
+                    <i class="fa fa-key"></i> Edit Password
+                </a>
                 <div class="dropdown-divider"></div>
                 <a href="{{ route('logout') }}" class="dropdown-item has-icon text-danger"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

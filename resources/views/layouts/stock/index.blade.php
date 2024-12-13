@@ -37,6 +37,29 @@
             width: 30%;
             background-color: #f8f9fa;
         }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            table-layout: auto;
+        }
+
+        .table th,
+        .table td {
+            white-space: nowrap;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+
+            .table th,
+            .table td {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 
     <div class="main-content">

@@ -108,6 +108,9 @@
                                         <button type="submit" class="btn btn-primary mr-2">
                                             <i class="fas fa-save mr-1"></i> Ganti Password
                                         </button>
+                                        <a href="{{ route('home') }}" class="btn btn-secondary">
+                                            <i class="fas fa-arrow-left mr-1"></i> Kembali
+                                        </a>
                                     </div>
                                 </form>
                             </div>

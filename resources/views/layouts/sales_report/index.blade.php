@@ -3,6 +3,25 @@
 @section('title', 'Sales Report')
 
 @section('content')
+    <style>
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0px;
+        }
+
+        .button-group .btn {
+            flex: 0 1 auto;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .button-group {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+
     <div class="main-content">
         <section class="section">
             <div class="section-header">
@@ -47,12 +66,14 @@
                                 </div>
                             </div>
                             <div class="row mt-3">
-                                <div class="col-md-3">
-                                    <button type="submit" class="btn btn-primary">Filter</button>
-                                    <button type="submit" name="export" value="excel" class="btn btn-success">Export
-                                        Excel</button>
-                                    <button type="submit" name="export" value="pdf" class="btn btn-danger">Export
-                                        PDF</button>
+                                <div class="col-12">
+                                    <div class="button-group d-flex flex-wrap">
+                                        <button type="submit" class="btn btn-primary mr-2 mb-2">Filter</button>
+                                        <button type="submit" name="export" value="excel"
+                                            class="btn btn-success mr-2 mb-2">Export Excel</button>
+                                        <button type="submit" name="export" value="pdf"
+                                            class="btn btn-danger mb-2">Export PDF</button>
+                                    </div>
                                 </div>
                             </div>
                         </form>

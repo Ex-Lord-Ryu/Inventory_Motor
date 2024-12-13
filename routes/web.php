@@ -9,16 +9,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('/get-data', [HomeController::class, 'getData'])->name('get.data');
+
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/change-password', [ProfileController::class, 'changepassword'])->name('profile.change-password');
     Route::put('/profile/password', [ProfileController::class, 'password'])->name('profile.password');
     Route::get('/blank-page', [App\Http\Controllers\HomeController::class, 'blank'])->name('blank');
 
+    Route::get('/user_management', [App\Http\Controllers\user_managementController::class, 'index'])->name('user_management.index')->middleware('superadmin');
+    Route::get('/user_management/create', [App\Http\Controllers\user_managementController::class, 'create'])->name('user_management.create')->middleware('superadmin');
+    Route::post('/user_management/store', [App\Http\Controllers\user_managementController::class, 'store'])->name('user_management.store')->middleware('superadmin');
     Route::get('/user_management', [App\Http\Controllers\user_managementController::class, 'index'])->name('user_management.index')->middleware('superadmin');
     Route::get('/user_management/edit/{id}', [App\Http\Controllers\user_managementController::class, 'edit'])->name('user_management.edit')->middleware('superadmin');
     Route::put('/user_management/update/{id}', [App\Http\Controllers\user_managementController::class, 'update'])->name('user_management.update')->middleware('superadmin');

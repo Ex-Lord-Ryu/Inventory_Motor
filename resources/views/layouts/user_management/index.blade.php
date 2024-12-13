@@ -2,66 +2,39 @@
 
 @section('title', 'User Management')
 
-@push('style')
+@section('content')
     <style>
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .table th {
-            background-color: #f8f9fa;
+        .table-wrapper {
+            min-width: 1150px;
         }
 
-        .btn-action {
-            transition: all 0.3s;
+        .table {
+            table-layout: fixed;
+            width: 100%;
         }
 
-        .btn-action:hover {
-            transform: translateY(-2px);
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
         }
 
         .pagination {
-            margin-bottom: 0;
-        }
-
-        .page-item:first-child .page-link,
-        .page-item:last-child .page-link {
-            border-radius: 4px;
-        }
-
-        .page-link {
-            padding: 0.3rem 0.5rem;
-            font-size: 0.875rem;
-            line-height: 1.5;
-            color: #007bff;
-            background-color: #fff;
-            border: 1px solid #dee2e6;
-            margin: 0 2px;
-        }
-
-        .page-item.active .page-link {
-            z-index: 3;
-            color: #fff;
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .page-item.disabled .page-link {
-            color: #6c757d;
-            pointer-events: none;
-            background-color: #fff;
-            border-color: #dee2e6;
-        }
-
-        .pagination-info {
-            font-size: 0.875rem;
-            color: #6c757d;
+            justify-content: flex-end;
         }
     </style>
-@endpush
 
-@section('content')
     <div class="main-content">
         <section class="section">
             <div class="section-header">
@@ -92,8 +65,8 @@
                             <div class="col-md-6">
                                 <form action="{{ route('user_management.index') }}" method="GET" class="d-flex">
                                     <div class="input-group">
-                                        <input type="text" name="search" class="form-control"
-                                            placeholder="Cari Berdasarkan ID..." value="{{ request('search') }}">
+                                        <input type="text" name="search" class="form-control" placeholder="Search..."
+                                            value="{{ request('search') }}">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i>
                                                 Search</button>
@@ -101,44 +74,57 @@
                                     </div>
                                 </form>
                             </div>
+                            <div class="col-md-6 text-right">
+                                <a href="{{ route('user_management.create') }}" class="btn btn-primary">
+                                    <i class="fas fa-user-plus"></i> Tambah User
+                                </a>
+                            </div>
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nama</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($user_management as $item)
+                            <div class="table-wrapper">
+                                <table class="table table-hover">
+                                    <thead>
                                         <tr>
-                                            <td>{{ $item->id }}</td>
-                                            <td>{{ $item->name }}</td>
-                                            <td>{{ $item->email }}</td>
-                                            <td>{{ $item->role }}</td>
-                                            <td>
-                                                <a href="{{ route('user_management.edit', $item->id) }}"
-                                                    class="btn btn-sm btn-primary btn-action mr-1"><i
-                                                        class="fas fa-edit"></i> Edit</a>
-                                                <form action="{{ route('user_management.delete', $item->id) }}"
-                                                    method="POST" style="display: inline-block;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button"
-                                                        class="btn btn-sm btn-danger btn-action delete-btn"
-                                                        data-id="{{ $item->id }}"><i class="fas fa-trash"></i>
-                                                        Delete</button>
-                                                </form>
-                                            </td>
+                                            <th>No</th>
+                                            <th>Nama</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Action</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($user_management as $index => $item)
+                                            <tr>
+                                                <td>{{ $user_management->firstItem() + $index }}</td>
+                                                <td>{{ $item->name }}</td>
+                                                <td>{{ $item->email }}</td>
+                                                <td>{{ $item->role }}</td>
+                                                <td>
+                                                    <a href="{{ route('user_management.edit', $item->id) }}"
+                                                        class="btn btn-sm btn-primary btn-action mr-1"><i
+                                                            class="fas fa-edit"></i> Edit</a>
+                                                    <form action="{{ route('user_management.delete', $item->id) }}"
+                                                        method="POST" style="display: inline-block;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-danger btn-action delete-btn"
+                                                            data-id="{{ $item->id }}">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer text-right">
+                                <nav class="d-inline-block">
+                                    {{ $user_management->appends(request()->query())->links('pagination::bootstrap-4') }}
+                                </nav>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -148,6 +134,8 @@
 @endsection
 
 @push('scripts')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
     <script>
         $(document).ready(function() {

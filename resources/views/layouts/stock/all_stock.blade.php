@@ -5,15 +5,10 @@
 @push('style')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+@endpush
+
+@section('content')
     <style>
-        body {
-            background-color: #f4f6f9;
-        }
-
-        .main-content {
-            padding: 20px;
-        }
-
         .section-header {
             background-color: #fff;
             padding: 20px;
@@ -23,8 +18,6 @@
         }
 
         .card {
-            border-radius: 15px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s;
         }
 
@@ -84,13 +77,36 @@
             min-height: calc(100% - 1rem);
         }
 
-        @media (min-width: 576px) {
-            .modal-dialog-centered {
-                min-height: calc(100% - 3.5rem);
+        #motorTable,
+        #sparePartsTable {
+            width: 100% !important;
+        }
+
+        #motorTable_wrapper,
+        #sparePartsTable_wrapper {
+            padding: 0;
+        }
+
+        .dataTables_scrollBody {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        @media screen and (max-width: 767px) {
+
+            .dataTables_wrapper .dataTables_info,
+            .dataTables_wrapper .dataTables_paginate {
+                float: none;
+                text-align: center;
+            }
+
+            .dataTables_wrapper .dataTables_paginate {
+                margin-top: 0.5em;
             }
         }
 
-        #motorSearch,
+        #motorNameSearch,
         #sparePartSearch,
         #motorDetailSearch {
             border-radius: 20px;
@@ -100,10 +116,74 @@
             background-position: 10px center;
             background-size: 15px;
         }
-    </style>
-@endpush
 
-@section('content')
+        @media screen and (max-width: 767px) {
+            .responsive-table thead {
+                display: none;
+            }
+
+            .responsive-table,
+            .responsive-table tbody,
+            .responsive-table tr,
+            .responsive-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .responsive-table tr {
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                overflow: hidden;
+            }
+
+            .responsive-table td {
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+                border-bottom: 1px solid #eee;
+            }
+
+            .responsive-table td:last-child {
+                border-bottom: none;
+            }
+
+            .responsive-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+            }
+        }
+
+        @media screen and (min-width: 768px) {
+            .responsive-table {
+                display: table;
+            }
+
+            .responsive-table thead {
+                display: table-header-group;
+            }
+
+            .responsive-table tbody {
+                display: table-row-group;
+            }
+
+            .responsive-table tr {
+                display: table-row;
+            }
+
+            .responsive-table th,
+            .responsive-table td {
+                display: table-cell;
+            }
+        }
+    </style>
+
     <div class="main-content">
         <section class="section">
             <div class="section-header">
@@ -153,8 +233,9 @@
                                         placeholder="Search Motor Name">
                                 </div>
 
-                                <div class="table-responsive mb-4">
-                                    <table class="table table-bordered table-striped motorTable">
+                                <div class="table-responsive mt-4">
+                                    <table class="table table-bordered table-striped responsive-table" id="motorTable"
+                                        style="width:100%">
                                         <thead>
                                             <tr>
                                                 <th>No</th>
@@ -173,10 +254,10 @@
                                                     $newestMotor = $sortedMotors->last();
                                                 @endphp
                                                 <tr>
-                                                    <td></td>
-                                                    <td>{{ $motorName }}</td>
-                                                    <td>{{ $motors->count() }}</td>
-                                                    <td>
+                                                    <td data-label="No"></td>
+                                                    <td data-label="Nama Motor">{{ $motorName }}</td>
+                                                    <td data-label="Total Unit">{{ $motors->count() }}</td>
+                                                    <td data-label="Harga Beli">
                                                         @if ($oldestMotor->harga_beli != $newestMotor->harga_beli)
                                                             Rp {{ number_format($oldestMotor->harga_beli, 0, ',', '.') }} -
                                                             Rp {{ number_format($newestMotor->harga_beli, 0, ',', '.') }}
@@ -184,7 +265,7 @@
                                                             Rp {{ number_format($newestMotor->harga_beli, 0, ',', '.') }}
                                                         @endif
                                                     </td>
-                                                    <td>
+                                                    <td data-label="Harga Jual">
                                                         @if ($oldestMotor->harga_jual != $newestMotor->harga_jual)
                                                             Rp {{ number_format($oldestMotor->harga_jual, 0, ',', '.') }} -
                                                             Rp {{ number_format($newestMotor->harga_jual, 0, ',', '.') }}
@@ -192,7 +273,7 @@
                                                             Rp {{ number_format($newestMotor->harga_jual, 0, ',', '.') }}
                                                         @endif
                                                     </td>
-                                                    <td>
+                                                    <td data-label="Action">
                                                         <button class="btn btn-info btn-sm detail-btn"
                                                             data-motor-name="{{ $motorName }}">
                                                             <i class="fas fa-eye"></i> Detail
@@ -212,35 +293,57 @@
                                         placeholder="Search Spare Part">
                                 </div>
                                 <div class="table-responsive mt-4">
-                                    <table class="table table-bordered table-striped" id="sparePartsTable">
+                                    <table class="table table-bordered table-striped responsive-table" id="sparePartsTable"
+                                        style="width:100%">
                                         <thead>
                                             <tr>
                                                 <th>No</th>
-                                                <th>Spare Part Name</th>
-                                                <th>Type</th>
-                                                <th>Jumlah</th>
-                                                <th>Harga Beli</th>
-                                                <th>Harga Jual</th>
+                                                <th>Nama Spare Part</th>
+                                                <th>Total Unit</th>
+                                                <th>Harga Beli (Sebelumnya - Terbaru)</th>
+                                                <th>Harga Jual (Sebelumnya - Terbaru)</th>
                                                 <th>Created At</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse ($spareParts as $index => $sparePart)
+                                            @foreach ($groupedSpareParts as $sparePartName => $spareParts)
+                                                @php
+                                                    $sortedSpareParts = $spareParts->sortBy('created_at');
+                                                    $oldestSparePart = $sortedSpareParts->first();
+                                                    $newestSparePart = $sortedSpareParts->last();
+                                                @endphp
                                                 <tr>
-                                                    <td>{{ $index + 1 }}</td>
-                                                    <td>{{ $sparePart->sparePart->nama_spare_part }}</td>
-                                                    <td>{{ $sparePart->type }}</td>
-                                                    <td>{{ $sparePart->jumlah }}</td>
-                                                    <td>Rp {{ number_format($sparePart->harga_beli, 0, ',', '.') }}</td>
-                                                    <td>Rp {{ number_format($sparePart->harga_jual, 0, ',', '.') }}</td>
-                                                    <td>{{ $sparePart->created_at->format('Y-m-d H:i') }}</td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="7" class="text-center">Tidak ada spare part tersedia
+                                                    <td data-label='No'></td>
+                                                    <td data-label='Nama Spare Part'>{{ $sparePartName }}</td>
+                                                    <td data-label='Total Unit'>{{ $spareParts->sum('jumlah') }}</td>
+                                                    <td data-label='Harga Beli'>
+                                                        @if ($oldestSparePart->harga_beli != $newestSparePart->harga_beli)
+                                                            Rp
+                                                            {{ number_format($oldestSparePart->harga_beli, 0, ',', '.') }}
+                                                            -
+                                                            Rp
+                                                            {{ number_format($newestSparePart->harga_beli, 0, ',', '.') }}
+                                                        @else
+                                                            Rp
+                                                            {{ number_format($newestSparePart->harga_beli, 0, ',', '.') }}
+                                                        @endif
                                                     </td>
+                                                    <td data-label='Harga Jual'>
+                                                        @if ($oldestSparePart->harga_jual != $newestSparePart->harga_jual)
+                                                            Rp
+                                                            {{ number_format($oldestSparePart->harga_jual, 0, ',', '.') }}
+                                                            -
+                                                            Rp
+                                                            {{ number_format($newestSparePart->harga_jual, 0, ',', '.') }}
+                                                        @else
+                                                            Rp
+                                                            {{ number_format($newestSparePart->harga_jual, 0, ',', '.') }}
+                                                        @endif
+                                                    </td>
+                                                    <td data-label='Created At'>
+                                                        {{ $newestSparePart->created_at->format('Y-m-d H:i') }}</td>
                                                 </tr>
-                                            @endforelse
+                                            @endforeach
                                         </tbody>
                                     </table>
                                 </div>
@@ -258,15 +361,18 @@
         <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="motorDetailModalLabel">Detail Motor: <span id="motorNameTitle"></span></h5>
+                    <h5 class="modal-title" id="motorDetailModalLabel">Detail Motor: <span id="motorNameTitle"></span>
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="motorDetailSearch" class="form-control mb-3" placeholder="Search in details">
+                    <input type="text" id="motorDetailSearch" class="form-control"
+                        placeholder="Search in details">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped" id="motorDetailTable">
+                        <table class="table table-bordered table-striped responsive-table full-width-table"
+                            id="motorDetailTable">
                             <thead>
                                 <tr>
                                     <th>No</th>
@@ -292,14 +398,15 @@
 @push('scripts')
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.7/js/dataTables.responsive.min.js"></script>
     <script>
         $(document).ready(function() {
             var motorTable, motorDetailTable, sparePartsTable;
             var activeTab = 'motors';
 
             function initMotorTable() {
-                motorTable = $('.motorTable').DataTable({
-                    responsive: true,
+                motorTable = $('#motorTable').DataTable({
+                    responsive: false,
                     pageLength: 10,
                     searching: false,
                     order: [
@@ -324,7 +431,6 @@
                     drawCallback: function() {
                         $('.dataTables_paginate > .pagination').addClass('pagination-sm');
                     }
-
                 });
 
                 // Menambahkan nomor urut yang konsisten
@@ -340,7 +446,7 @@
 
             function initMotorDetailTable() {
                 motorDetailTable = $('#motorDetailTable').DataTable({
-                    responsive: true,
+                    responsive: false,
                     searching: false,
                     pageLength: 10,
                     order: [
@@ -377,23 +483,27 @@
 
             function initSparePartsTable() {
                 sparePartsTable = $('#sparePartsTable').DataTable({
-                    responsive: true,
-                    pageLength: 25,
+                    responsive: false,
+                    pageLength: 10,
                     searching: false,
                     order: [
-                        [0, 'asc']
+                        [5, 'desc'] // Sort by Created At column in descending order
                     ],
                     columnDefs: [{
-                        targets: 0,
-                        searchable: false,
-                        orderable: false
-                    }],
+                            targets: 0,
+                            searchable: false,
+                            orderable: false
+                        },
+                        {
+                            targets: 5,
+                            type: 'date' // Specify that this column contains date data
+                        }
+                    ],
                     language: {
                         paginate: {
                             next: '<i class="fas fa-chevron-right"></i>',
                             previous: '<i class="fas fa-chevron-left"></i>'
-                        },
-                        emptyTable: "Tidak ada data spare part tersedia"
+                        }
                     },
                     drawCallback: function() {
                         $('.dataTables_paginate > .pagination').addClass('pagination-sm');
@@ -415,8 +525,13 @@
             initMotorDetailTable();
             initSparePartsTable();
 
+            setTimeout(function() {
+                adjustTable(motorTable);
+                adjustTable(sparePartsTable);
+            }, 100);
+
             // Menangani klik tombol detail
-            $('.motorTable').on('click', '.detail-btn', function() {
+            $('#motorTable').on('click', '.detail-btn', function() {
                 var motorName = $(this).data('motor-name');
                 showMotorDetails(motorName);
             });
@@ -445,48 +560,90 @@
                 $('#motorDetailModal').modal('show');
             }
 
-            // Pencarian di dalam modal detail
-            $('#motorDetailSearch').on('keyup', function() {
-                motorDetailTable.search(this.value).draw();
+            $('#motorDetailModal').on('shown.bs.modal', function() {
+                motorDetailTable.columns.adjust().responsive.recalc();
+                adjustAllTables();
             });
 
             // Tab Change Event
             $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
                 if (e.target.id === 'motors-tab') {
                     activeTab = 'motors';
-                    motorTable.columns.adjust().responsive.recalc();
+                    adjustTable(motorTable);
                 } else if (e.target.id === 'spare-parts-tab') {
                     activeTab = 'spare-parts';
-                    sparePartsTable.columns.adjust().responsive.recalc();
+                    adjustTable(sparePartsTable);
                 }
             });
 
+            function adjustAllTables() {
+                if (motorTable) motorTable.columns.adjust().responsive.recalc();
+                if (sparePartsTable) sparePartsTable.columns.adjust().responsive.recalc();
+                if (motorDetailTable && $('#motorDetailModal').hasClass('show')) {
+                    motorDetailTable.columns.adjust().responsive.recalc();
+                }
+            }
+
+            function adjustTable(table) {
+                if (table) {
+                    table.columns.adjust().responsive.recalc();
+                    table.draw(false); // Redraw tanpa reset paging
+                }
+            }
+
             // Motor Name Search Event
             $('#motorNameSearch').on('keyup', function() {
-                if (activeTab === 'motors') {
-                    motorTable.search(this.value).draw();
-                }
+                var searchText = $(this).val().toLowerCase();
+                $('#motorTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(searchText) > -1)
+                });
             });
 
             // Spare Parts Search Event
             $('#sparePartSearch').on('keyup', function() {
-                if (activeTab === 'spare-parts') {
-                    sparePartsTable.search(this.value).draw();
-                }
+                var searchText = $(this).val().toLowerCase();
+                $('#sparePartsTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(searchText) > -1)
+                });
+            });
+
+            // Pencarian di dalam modal detail
+            $('#motorDetailSearch').on('keyup', function() {
+                var searchText = $(this).val().toLowerCase();
+                $('#sparePartsTable tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(searchText) > -1)
+                });
             });
 
             // Adjust column widths on window resize
             $(window).on('resize', function() {
-                motorTable.columns.adjust().responsive.recalc();
-                sparePartsTable.columns.adjust().responsive.recalc();
+                motorTable.columns.adjust();
+                sparePartsTable.columns.adjust();
                 if ($('#motorDetailModal').hasClass('show')) {
-                    motorDetailTable.columns.adjust().responsive.recalc();
+                    motorDetailTable.columns.adjust();
                 }
             });
 
-            // Adjust column widths when modal is shown
+            $(window).on('resize orientationchange', function() {
+                adjustTable(motorTable);
+                adjustTable(sparePartsTable);
+                if ($('#motorDetailModal').hasClass('show')) {
+                    adjustTable(motorDetailTable);
+                }
+            });
+
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    adjustTable(motorTable);
+                    adjustTable(sparePartsTable);
+                    if ($('#motorDetailModal').hasClass('show')) {
+                        adjustTable(motorDetailTable);
+                    }
+                }, 100);
+            });
+
             $('#motorDetailModal').on('shown.bs.modal', function() {
-                motorDetailTable.columns.adjust().responsive.recalc();
+                motorDetailTable.columns.adjust();
 
                 // Menyesuaikan tinggi scrolling
                 var modalHeight = $('#motorDetailModal .modal-content').height();
