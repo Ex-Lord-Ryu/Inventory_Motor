@@ -48,7 +48,7 @@ class PurchaseOrderController extends Controller
             'status' => 'required|in:pending,completed,cancelled',
         ]);
 
-        $newInvoice = time();
+        $newInvoice = "INV-" . date('Y') . "-" . time();
 
         $latestOrder = PurchaseOrder::max('order');
         $newOrder = $latestOrder ? (int)$latestOrder + 1 : 1;

@@ -120,16 +120,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($recentOrders as $order)
+                                    @foreach ($recentOrders as $index => $order)
                                         <tr>
-                                            <td>{{ $order->id }}</td>
+                                            <td>{{ $recentOrders->count() - $index }}</td>
                                             <td>{{ $order->user->name }}</td>
                                             <td>{{ $order->sparePart->nama_spare_part }}</td>
                                             <td>{{ $order->jumlah }}</td>
                                             <td>{{ $order->created_at->format('Y-m-d H:i:s') }}</td>
                                             <td>
                                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#orderModal{{ $order->id }}">
+                                                    data-bs-target="#orderModal{{ $recentOrders->count() - $index }}">
                                                     Detail
                                                 </button>
                                             </td>
@@ -144,21 +144,21 @@
         </section>
     </div>
 
-    @foreach ($recentOrders as $order)
-        <div class="modal fade" id="orderModal{{ $order->id }}" tabindex="-1"
-            aria-labelledby="orderModalLabel{{ $order->id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="orderModalLabel{{ $order->id }}">
-                            <i class="fas fa-clipboard-list me-2"></i>Order Detail #{{ $order->id }}
-                        </h5>
+    @foreach ($recentOrders as $index => $order)
+    <div class="modal fade" id="orderModal{{ $recentOrders->count() - $index }}" tabindex="-1"
+        aria-labelledby="orderModalLabel{{ $recentOrders->count() - $index }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="orderModalLabel{{ $recentOrders->count() - $index }}">
+                        <i class="fas fa-clipboard-list me-2"></i>Order Detail #{{ $recentOrders->count() - $index }}
+                    </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div id="printableArea{{ $order->id }}">
-                            <h2>Order Detail #{{ $order->id }}</h2>
+                            <h2>Order Detail #{{ $recentOrders->count() - $index}}</h2>
                             <table class="table table-bordered">
                                 <tr>
                                     <th colspan="2">User Information</th>

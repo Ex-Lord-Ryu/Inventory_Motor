@@ -151,9 +151,9 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($distributor as $item)
+                                        @foreach ($distributor as $index => $item)
                                             <tr>
-                                                <td>{{ $item->order }}</td>
+                                                <td>{{ $index + 1 }}</td>
                                                 <td>{{ $item->name_Vendor }}</td>
                                                 <td>{{ $item->telepon }}</td>
                                                 <td>{{ $item->alamat }}</td>
@@ -180,16 +180,10 @@
                         </div>
 
                         <!-- Pagination Section -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                <p class="text-sm text-gray-700 leading-5">
-                                    Showing {{ $distributor->firstItem() }} to {{ $distributor->lastItem() }} of
-                                    {{ $distributor->total() }} results
-                                </p>
-                            </div>
-                            <div>
-                                {{ $distributor->links() }}
-                            </div>
+                        <div class="card-footer text-right">
+                            <nav class="d-inline-block">
+                                {{ $distributor->appends(request()->query())->links('pagination::bootstrap-4') }}
+                            </nav>
                         </div>
                     </div>
                 </div>

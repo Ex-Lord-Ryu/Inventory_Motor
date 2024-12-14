@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('harga', 15, 2)->nullable();
             $table->decimal('total_harga', 15, 2);
             $table->string('invoice')->nullable();
-            $table->string('status')->default('active');
+            $table->string('status');
             $table->integer('order')->default(0);
             $table->timestamps();
 

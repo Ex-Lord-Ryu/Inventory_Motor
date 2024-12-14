@@ -14,7 +14,6 @@ class OrderMotorController extends Controller
 {
     public function index()
     {
-        Log::info('Accessing OrderMotorController@index');
         try {
             $availableMotors = StockMotor::where('type', 'in')
                 ->whereNotNull('nomor_rangka')
@@ -35,16 +34,6 @@ class OrderMotorController extends Controller
                     ];
                 })->values()->toArray();
 
-            // Ambil semua warna yang unik
-            $allWarnas = StockMotor::where('type', 'in')
-                ->whereNotNull('nomor_rangka')
-                ->whereNotNull('nomor_mesin')
-                ->with('warna')
-                ->get()
-                ->pluck('warna')
-                ->unique('id')
-                ->values();
-
             $recentOrders = OrderMotor::with(['motor', 'warna', 'user'])
                 ->orderBy('created_at', 'desc')
                 ->take(10)
@@ -53,7 +42,7 @@ class OrderMotorController extends Controller
             $currentUser = Auth::user();
 
             Log::info('Index data retrieved successfully');
-            return view('layouts.order_motor.index', compact('availableMotors', 'allWarnas', 'recentOrders', 'currentUser'));
+            return view('layouts.order_motor.index', compact('availableMotors', 'recentOrders', 'currentUser'));
         } catch (\Exception $e) {
             Log::error('Error in OrderMotorController@index: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while loading the page.');

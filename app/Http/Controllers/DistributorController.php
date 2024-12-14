@@ -21,7 +21,7 @@ class DistributorController extends Controller
                     ->orWhere('alamat', 'like', "%{$search}%");
             })
             ->orderBy($sortBy, $order)
-            ->paginate(10);
+            ->paginate(5);
 
         return view('layouts.distributor.index', compact('distributor', 'sortBy', 'order'));
     }

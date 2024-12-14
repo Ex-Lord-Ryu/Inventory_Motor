@@ -48,7 +48,7 @@ class StockController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $motors = $motorStocks->groupBy(function ($item) {
+        $groupedMotors = $motorStocks->groupBy(function ($item) {
             return $item->motor->nama_motor . '-' . ($item->warna->nama_warna ?? 'N/A');
         })->map(function ($group) {
             $first = $group->first();
@@ -56,10 +56,18 @@ class StockController extends Controller
             return $first;
         })->values();
 
+        $motors = new \Illuminate\Pagination\LengthAwarePaginator(
+            $groupedMotors->forPage($request->page, 5),
+            $groupedMotors->count(),
+            5,
+            $request->page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         $spareParts = $sparePartQuery
             ->with('sparePart')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(5);
 
         $groupedMotors = $motors->groupBy('motor.nama_motor');
 
@@ -155,15 +163,15 @@ class StockController extends Controller
         $motorStocks = StockMotor::with(['motor', 'warna'])
             ->orderBy('created_at', 'desc')
             ->get();
-    
+
         $groupedMotors = $motorStocks->groupBy('motor.nama_motor');
-    
+
         $spareParts = StockSparePart::with('sparePart')
             ->orderBy('created_at', 'desc')
             ->get();
-    
+
         $groupedSpareParts = $spareParts->groupBy('sparePart.nama_spare_part');
-    
+
         return view('layouts.stock.all_stock', compact('groupedMotors', 'groupedSpareParts'));
     }
 

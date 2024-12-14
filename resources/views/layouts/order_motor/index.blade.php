@@ -93,9 +93,6 @@
                                 <label for="warna_id">Color</label>
                                 <select name="warna_id" id="warna_id" class="form-control" required>
                                     <option value="">Select a color</option>
-                                    @foreach ($allWarnas as $warna)
-                                        <option value="{{ $warna->id }}">{{ $warna->nama_warna }}</option>
-                                    @endforeach
                                 </select>
                             </div>
 
@@ -129,9 +126,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($recentOrders as $order)
+                                    @php
+                                        $totalOrders = count($recentOrders);
+                                    @endphp
+                                    @foreach ($recentOrders as $index => $order)
                                         <tr>
-                                            <td>{{ $order->id }}</td>
+                                            <td>{{ $totalOrders - $index }}</td>
                                             <td>{{ $order->user->name }}</td>
                                             <td>{{ $order->motor->nama_motor }}</td>
                                             <td>{{ $order->warna->nama_warna }}</td>
@@ -139,7 +139,8 @@
                                             <td>{{ $order->created_at->format('Y-m-d H:i:s') }}</td>
                                             <td>
                                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#orderModal{{ $order->id }}">
+                                                    data-bs-target="#orderModal{{ $order->id }}"
+                                                    data-order-number="{{ $totalOrders - $index }}">
                                                     Detail
                                                 </button>
                                             </td>
@@ -154,21 +155,21 @@
         </section>
     </div>
 
-    @foreach ($recentOrders as $order)
+    @foreach ($recentOrders as $index => $order)
         <div class="modal fade" id="orderModal{{ $order->id }}" tabindex="-1"
             aria-labelledby="orderModalLabel{{ $order->id }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-xl">
                 <div class="modal-content">
                     <div class="modal-header bg-primary text-white">
                         <h5 class="modal-title" id="orderModalLabel{{ $order->id }}">
-                            <i class="fas fa-clipboard-list me-2"></i>Order Detail #{{ $order->id }}
+                            <i class="fas fa-clipboard-list me-2"></i>Order Detail #<span class="order-number"></span>
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div id="printableArea{{ $order->id }}">
-                            <h2>Order Detail #{{ $order->id }}</h2>
+                            <h2>Order Detail #<span class="order-number"></span></h2>
                             <table class="table table-bordered">
                                 <tr>
                                     <th colspan="2">User Information</th>
@@ -286,6 +287,14 @@
             });
         });
 
+        // Add this new code to update the order number in the modal
+        $('.modal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var orderNumber = button.data('order-number');
+            var modal = $(this);
+            modal.find('.order-number').text(orderNumber);
+        });
+
         function printOrder(orderId) {
             const printWindow = window.open('', '_blank');
             const printContent = document.getElementById(`printableArea${orderId}`).innerHTML;
@@ -320,6 +329,31 @@
                 }
             }
         }
+
+        $(document).ready(function() {
+            const motorSelect = document.getElementById('motor_id');
+            const warnaSelect = document.getElementById('warna_id');
+            const availableMotors = @json($availableMotors);
+
+            motorSelect.addEventListener('change', function() {
+                const selectedMotorId = this.value;
+
+                // Clear existing options
+                warnaSelect.innerHTML = '<option value="">Select a color</option>';
+
+                if (selectedMotorId) {
+                    const selectedMotor = availableMotors.find(motor => motor.motor.id == selectedMotorId);
+                    if (selectedMotor && selectedMotor.warnas) {
+                        selectedMotor.warnas.forEach(warna => {
+                            const option = document.createElement('option');
+                            option.value = warna.id;
+                            option.textContent = `${warna.nama} (Stock: ${warna.stock})`;
+                            warnaSelect.appendChild(option);
+                        });
+                    }
+                }
+            });
+        });
 
         function initializeModals() {
             var modals = document.querySelectorAll('.modal');
@@ -372,7 +406,7 @@
                             });
                         },
                         error: function(xhr) {
-                           console.log('Error response:', xhr.responseJSON);
+                            console.log('Error response:', xhr.responseJSON);
 
                             let errorMessage = 'Terjadi kesalahan saat menyimpan order.';
 

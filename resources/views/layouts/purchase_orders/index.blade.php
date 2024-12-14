@@ -319,16 +319,10 @@
                             </div>
 
                             <!-- Pagination Section -->
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <div>
-                                    <p class="text-sm text-gray-700 leading-5">
-                                        Showing {{ $purchaseOrders->firstItem() }} to {{ $purchaseOrders->lastItem() }} of
-                                        {{ $purchaseOrders->total() }} results
-                                    </p>
-                                </div>
-                                <div>
-                                    {{ $purchaseOrders->links() }}
-                                </div>
+                            <div class="card-footer text-right">
+                                <nav class="d-inline-block">
+                                    {{ $purchaseOrders->appends(request()->query())->links('pagination::bootstrap-4') }}
+                                </nav>
                             </div>
                         </div>
                     </div>

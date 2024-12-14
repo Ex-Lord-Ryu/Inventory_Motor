@@ -63,8 +63,8 @@
                             <div class="col-md-6">
                                 <form action="{{ route('purchase_orders_details.index') }}" method="GET" class="d-flex">
                                     <div class="input-group">
-                                        <input type="text" name="search" class="form-control"
-                                            placeholder="Search..." value="{{ request('search') }}">
+                                        <input type="text" name="search" class="form-control" placeholder="Search..."
+                                            value="{{ request('search') }}">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i>
                                                 Search</button>
@@ -125,17 +125,10 @@
                         </div>
 
                         <!-- Pagination Section -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                <p class="text-sm text-gray-700 leading-5">
-                                    Showing {{ $purchaseOrdersDetails->firstItem() }} to
-                                    {{ $purchaseOrdersDetails->lastItem() }} of {{ $purchaseOrdersDetails->total() }}
-                                    results
-                                </p>
-                            </div>
-                            <div>
-                                {{ $purchaseOrdersDetails->links() }}
-                            </div>
+                        <div class="card-footer text-right">
+                            <nav class="d-inline-block">
+                                {{ $purchaseOrdersDetails->appends(request()->query())->links('pagination::bootstrap-4') }}
+                            </nav>
                         </div>
                     </div>
                 </div>

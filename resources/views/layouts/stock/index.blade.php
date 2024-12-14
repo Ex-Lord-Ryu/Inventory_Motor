@@ -54,7 +54,6 @@
         }
 
         @media (max-width: 768px) {
-
             .table th,
             .table td {
                 font-size: 0.9rem;
@@ -132,7 +131,7 @@
                                         <tbody>
                                             @foreach ($motors as $index => $motor)
                                                 <tr>
-                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{ $motors->firstItem() + $index }}</td>
                                                     <td>{{ $motor->motor->nama_motor }}</td>
                                                     <td>{{ $motor->warna->nama_warna ?? 'N/A' }}</td>
                                                     <td>{{ $motor->jumlah }}</td>
@@ -156,6 +155,13 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                @if($motors->hasPages())
+                                    <div class="card-footer">
+                                        <nav class="d-inline-block">
+                                            {{ $motors->appends(request()->query())->links('pagination::bootstrap-4') }}
+                                        </nav>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -183,7 +189,7 @@
                                         <tbody>
                                             @foreach ($spareParts as $index => $sparePart)
                                                 <tr>
-                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{ $spareParts->firstItem() + $index }}</td>
                                                     <td>{{ $sparePart->sparePart->nama_spare_part }}</td>
                                                     <td>{{ $sparePart->jumlah }}</td>
                                                     <td>Rp {{ number_format($sparePart->harga_jual, 0, ',', '.') }}</td>
@@ -204,22 +210,26 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                @if($spareParts->hasPages())
+                                    <div class="card-footer">
+                                        <nav class="d-inline-block">
+                                            {{ $spareParts->appends(request()->query())->links('pagination::bootstrap-4') }}
+                                        </nav>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Pagination Section -->
+                <!-- Result Summary Section -->
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <p class="text-muted">
-                                        Showing {{ $motors->count() + $spareParts->count() }} results
-                                    </p>
-                                    <!-- Add pagination links here if needed -->
-                                </div>
+                                <p class="text-muted">
+                                    Showing {{ $motors->total() }} motors and {{ $spareParts->total() }} spare parts
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -353,6 +363,59 @@
                 theme: 'bootstrap4',
                 width: '100%',
                 minimumResultsForSearch: Infinity // Menyembunyikan kotak pencarian
+            });
+
+            // Fungsi untuk menyesuaikan tinggi tabel
+            function adjustTableHeight() {
+                var windowHeight = $(window).height();
+                var headerHeight = $('.section-header').outerHeight(true);
+                var cardHeaderHeight = $('.card-header').outerHeight(true);
+                var cardFooterHeight = $('.card-footer').outerHeight(true);
+                var tableHeaderHeight = $('table thead').outerHeight(true);
+                
+                var availableHeight = windowHeight - headerHeight - cardHeaderHeight - cardFooterHeight - tableHeaderHeight - 100; // 100 adalah margin tambahan
+                
+                $('.table-responsive').css('max-height', availableHeight + 'px');
+            }
+
+            // Panggil fungsi saat halaman dimuat dan saat ukuran window berubah
+            adjustTableHeight();
+            $(window).resize(adjustTableHeight);
+
+            // Fungsi untuk memuat data menggunakan AJAX
+            function loadData(url, tableId) {
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $(tableId + ' tbody').html(data.html);
+                        $(tableId + '_pagination').html(data.pagination);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error loading data:", error);
+                    }
+                });
+            }
+
+            // Event listener untuk pagination links
+            $(document).on('click', '.pagination a', function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                var target = $(this).closest('.card').find('.table-responsive');
+                var paginationContainer = $(this).closest('.card-footer');
+            
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        target.html($(response).find('.table-responsive').html());
+                        paginationContainer.html($(response).find('.card-footer').html());
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error loading data:", error);
+                    }
+                });
             });
         });
     </script>

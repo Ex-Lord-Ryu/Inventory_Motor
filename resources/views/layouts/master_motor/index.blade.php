@@ -157,12 +157,8 @@
                         </div>
 
                         <!-- Pagination Section -->
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="pagination-info">
-                                Showing {{ $motor->firstItem() }} to {{ $motor->lastItem() }} of {{ $motor->total() }}
-                                results
-                            </div>
-                            <nav aria-label="Page navigation">
+                        <div class="card-footer text-right">
+                            <nav class="d-inline-block">
                                 {{ $motor->appends(request()->query())->links('pagination::bootstrap-4') }}
                             </nav>
                         </div>
