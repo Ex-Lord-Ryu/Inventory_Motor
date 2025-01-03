@@ -12,81 +12,96 @@
                 <li class="{{ Request::is('home') ? 'active' : '' }}">
                     <a class="nav-link" href="{{ url('home') }}"><i class="fas fa-fire"></i><span>Dashboard</span></a>
                 </li>
-                @if (Auth::user()->role == 'superadmin')
-                    <li class="menu-header">User Management</li>
-                    <li class="{{ Request::is('user_management') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ url('user_management') }}"><i class="fas fa-user-shield"></i>
-                            <span>User Management</span></a>
+
+                @switch(Auth::user()->role)
+                    @case('superadmin')
+                        <li class="{{ Request::is('user_management') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ url('user_management') }}">
+                                <i class="fas fa-user-shield"></i><span>User Management</span>
+                            </a>
+                        </li>
+                    @endswitch
+
+                @if(in_array(Auth::user()->role, ['superadmin', 'admin', 'operasional', 'finance']))
+                    <li class="dropdown {{ Request::is('distributor*', 'purchase_orders*', 'purchase_orders_details*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link has-dropdown" data-toggle="dropdown">
+                            <i class="fas fa-warehouse"></i><span>Vendor Management</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="{{ Request::is('distributor') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('distributor') }}">Vendor</a>
+                            </li>
+                            <li class="{{ Request::is('purchase_orders') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('purchase_orders') }}">Purchase Order</a>
+                            </li>
+                            @if(in_array(Auth::user()->role, ['superadmin', 'admin']))
+                                <li class="{{ Request::is('purchase_orders_details') ? 'active' : '' }}">
+                                    <a class="nav-link" href="{{ url('purchase_orders_details') }}">Purchase Order Details</a>
+                                </li>
+                            @endif
+                        </ul>
                     </li>
                 @endif
 
-                <li class="menu-header">Vendor</li>
-                <li class="{{ Request::is('distributor') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('distributor') }}"><i class="fas fa-warehouse"></i>
-                        <span>Vendor</span></a>
-                </li>
-                <li class="{{ Request::is('purchase_orders') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('purchase_orders') }}"><i class="fas fa-store"></i> <span>Purchase
-                            Order</span></a>
-                </li>
-                <li class="{{ Request::is('purchase_orders_details') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('purchase_orders_details') }}"><i class="fas fa-clipboard"></i>
-                        <span>Purchase Order Details</span></a>
-                </li>
+                @if(in_array(Auth::user()->role, ['superadmin', 'admin', 'operasional']))
+                    <li class="dropdown {{ Request::is('stock*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link has-dropdown" data-toggle="dropdown">
+                            <i class="fas fa-dolly"></i><span>Stock Management</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="{{ Request::is('stock') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('stock') }}">Stock</a>
+                            </li>
+                            <li class="{{ Request::is('stock/sold-items') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('stock/sold-items') }}">Sold Items</a>
+                            </li>
+                            <li class="{{ Request::is('stock/all') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('stock/all') }}">All Stock</a>
+                            </li>
+                        </ul>
+                    </li>
+                @endif
 
-                <li class="menu-header">Stock</li>
-                <li class="{{ Request::is('stock') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('stock') }}"><i class="fas fa-dolly"></i> <span>Stock</span></a>
-                </li>
-                <li class="{{ Request::is('stock/sold-items') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('stock/sold-items') }}"><i class="fas fa-dolly"></i> <span>Sold
-                            Items</span></a>
-                </li>
-                <li class="{{ Request::is('stock/all') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('stock/all') }}"><i class="fas fa-database"></i> <span>All
-                            Stock</span></a>
-                </li>
+                @if(in_array(Auth::user()->role, ['superadmin', 'admin', 'operasional', 'sales']))
+                    <li class="dropdown {{ Request::is('order_motor*', 'order_spare_parts*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link has-dropdown" data-toggle="dropdown">
+                            <i class="fas fa-shopping-cart"></i><span>Orders</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="{{ Request::is('order_motor') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('order_motor') }}">Order Motor</a>
+                            </li>
+                            <li class="{{ Request::is('order_spare_parts') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('order_spare_parts') }}">Order Spare Parts</a>
+                            </li>
+                        </ul>
+                    </li>
+                @endif
 
-                <li class="menu-header">Penjualan</li>
-                <li class="{{ Request::is('order_motor') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('order_motor') }}"><i class="fas fa-database"></i> <span>Order
-                            Motor</span></a>
-                </li>
-                <li class="{{ Request::is('order_spare_parts') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('order_spare_parts') }}"><i class="fas fa-database"></i> <span>Order
-                            Spare Parts</span></a>
-                </li>
-
-                <li class="menu-header">Laporan</li>
                 <li class="{{ Request::is('sales_report') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('sales_report') }}"><i class="fas fa-database"></i> <span>Laporan
-                            Penjualan</span></a>
+                    <a class="nav-link" href="{{ url('sales_report') }}">
+                        <i class="fas fa-chart-bar"></i><span>Laporan Penjualan</span>
+                    </a>
                 </li>
 
-                <li class="menu-header">Data Master</li>
-                <li class="{{ Request::is('master_motor') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('master_motor') }}"><i class="fas fa-motorcycle"></i> <span>Master
-                            Motor</span></a>
-                </li>
-                <li class="{{ Request::is('master_spare_parts') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('master_spare_parts') }}"><i class="fas fa-toolbox"></i> <span>Master
-                            Spare Parts</span></a>
-                </li>
-                <li class="{{ Request::is('master_warna') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('master_warna') }}"><i class="fas fa-palette"></i> <span>Master
-                            Warna</span></a>
-                </li>
-
-                {{-- <!-- profile ganti password -->
-                <li class="menu-header">Profile</li>
-                <li class="{{ Request::is('profile/edit') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('profile/edit') }}"><i class="far fa-user"></i>
-                        <span>Profile</span></a>
-                </li>
-                <li class="{{ Request::is('profile/change-password') ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ url('profile/change-password') }}"><i class="fas fa-key"></i> <span>Ganti
-                            Password</span></a>
-                </li> --}}
+                @if(in_array(Auth::user()->role, ['superadmin', 'admin', 'operasional',]))
+                    <li class="dropdown {{ Request::is('master_motor*', 'master_spare_parts*', 'master_warna*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link has-dropdown" data-toggle="dropdown">
+                            <i class="fas fa-database"></i><span>Master Data</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="{{ Request::is('master_motor') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('master_motor') }}">Master Motor</a>
+                            </li>
+                            <li class="{{ Request::is('master_spare_parts') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('master_spare_parts') }}">Master Spare Parts</a>
+                            </li>
+                            <li class="{{ Request::is('master_warna') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ url('master_warna') }}">Master Warna</a>
+                            </li>
+                        </ul>
+                    </li>
+                @endif
             </ul>
         </aside>
     </div>

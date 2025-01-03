@@ -11,7 +11,9 @@ class FinanceMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role === 'superadmin' || Auth::user()->role === 'finance') {
+        if (Auth::user()->role === 'superadmin' || 
+            Auth::user()->role === 'admin' || 
+            Auth::user()->role === 'finance') {
             return $next($request);
         }
 

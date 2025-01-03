@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
-use App\Models\Stock;
-use App\Models\MotorUnit;
 use App\Models\Distributor;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;

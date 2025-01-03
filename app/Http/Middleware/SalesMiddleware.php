@@ -11,7 +11,9 @@ class SalesMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role === 'superadmin' || Auth::user()->role === 'sales') {
+        if (Auth::user()->role === 'superadmin' || 
+            Auth::user()->role === 'admin' || 
+            Auth::user()->role === 'sales') {
             return $next($request);
         }
 

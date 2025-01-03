@@ -11,7 +11,9 @@ class OperasionalMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->role === 'superadmin' || Auth::user()->role === 'operasional') {
+        if (Auth::user()->role === 'superadmin' || 
+            Auth::user()->role === 'admin' || 
+            Auth::user()->role === 'operasional') {
             return $next($request);
         }
 
