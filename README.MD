@@ -9,12 +9,12 @@
 ### Installation Steps
 1. Clone the repository:
     ```bash
-    git clone https://github.com/vickymaulana/laravel11-stisla.git
+    https://github.com/Ex-Lord-Ryu/Inventory_Motor.git
     ```
 
 2. Navigate into the project directory:
     ```bash
-    cd laravel11-stisla
+    cd Inventory_Motor
     ```
 
 3. Install PHP dependencies:
