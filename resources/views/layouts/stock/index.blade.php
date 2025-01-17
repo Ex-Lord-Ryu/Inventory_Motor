@@ -131,7 +131,7 @@
                                         <tbody>
                                             @foreach ($motors as $index => $motor)
                                                 <tr>
-                                                    <td>{{ $motors->firstItem() + $index }}</td>
+                                                    <td>{{ ($motors->currentPage() - 1) * $motors->perPage() + $loop->iteration }}</td>
                                                     <td>{{ $motor->motor->nama_motor }}</td>
                                                     <td>{{ $motor->warna->nama_warna ?? 'N/A' }}</td>
                                                     <td>{{ $motor->jumlah }}</td>
@@ -189,7 +189,7 @@
                                         <tbody>
                                             @foreach ($spareParts as $index => $sparePart)
                                                 <tr>
-                                                    <td>{{ $spareParts->firstItem() + $index }}</td>
+                                                    <td>{{ ($spareParts->currentPage() - 1) * $spareParts->perPage() + $loop->iteration }}</td>
                                                     <td>{{ $sparePart->sparePart->nama_spare_part }}</td>
                                                     <td>{{ $sparePart->jumlah }}</td>
                                                     <td>Rp {{ number_format($sparePart->harga_jual, 0, ',', '.') }}</td>
@@ -362,58 +362,73 @@
             $('.select2').select2({
                 theme: 'bootstrap4',
                 width: '100%',
-                minimumResultsForSearch: Infinity // Menyembunyikan kotak pencarian
+                minimumResultsForSearch: Infinity
             });
 
-            // Fungsi untuk menyesuaikan tinggi tabel
+            // Updated function to adjust table height
             function adjustTableHeight() {
-                var windowHeight = $(window).height();
-                var headerHeight = $('.section-header').outerHeight(true);
-                var cardHeaderHeight = $('.card-header').outerHeight(true);
-                var cardFooterHeight = $('.card-footer').outerHeight(true);
-                var tableHeaderHeight = $('table thead').outerHeight(true);
-                
-                var availableHeight = windowHeight - headerHeight - cardHeaderHeight - cardFooterHeight - tableHeaderHeight - 100; // 100 adalah margin tambahan
-                
-                $('.table-responsive').css('max-height', availableHeight + 'px');
-            }
-
-            // Panggil fungsi saat halaman dimuat dan saat ukuran window berubah
-            adjustTableHeight();
-            $(window).resize(adjustTableHeight);
-
-            // Fungsi untuk memuat data menggunakan AJAX
-            function loadData(url, tableId) {
-                $.ajax({
-                    url: url,
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        $(tableId + ' tbody').html(data.html);
-                        $(tableId + '_pagination').html(data.pagination);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error loading data:", error);
-                    }
+                $('.table-responsive').each(function() {
+                    var $tableContainer = $(this);
+                    var $table = $tableContainer.find('table');
+                    
+                    // Get window height
+                    var windowHeight = $(window).height();
+                    
+                    // Calculate maximum height (70% of window height)
+                    var maxHeight = Math.floor(windowHeight * 1);
+                    
+                    // Get actual table height
+                    var tableHeight = $table.height();
+                    
+                    // Set container height to either table height or max height, whichever is smaller
+                    var finalHeight = Math.min(tableHeight + 20, maxHeight); // Added 20px for padding
+                    
+                    $tableContainer.css({
+                        'max-height': finalHeight + 'px',
+                        'height': 'auto'
+                    });
                 });
             }
 
-            // Event listener untuk pagination links
+            // Call the function initially and on window resize
+            adjustTableHeight();
+            $(window).resize(adjustTableHeight);
+
+            // Event listener for pagination links
             $(document).on('click', '.pagination a', function(e) {
                 e.preventDefault();
                 var url = $(this).attr('href');
-                var target = $(this).closest('.card').find('.table-responsive');
-                var paginationContainer = $(this).closest('.card-footer');
+                var cardSection = $(this).closest('.card');
+                var target = cardSection.find('.table-responsive');
+                var paginationContainer = cardSection.find('.card-footer');
+            
+                // Add loading indicator
+                target.addClass('loading').append('<div class="text-center mt-3"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
             
                 $.ajax({
                     url: url,
                     type: 'GET',
                     success: function(response) {
-                        target.html($(response).find('.table-responsive').html());
-                        paginationContainer.html($(response).find('.card-footer').html());
+                        // Find the corresponding card in the response
+                        var responseCard = $(response).find('.card').filter(function() {
+                            return $(this).find('h4').text() === cardSection.find('h4').text();
+                        });
+                        
+                        // Update only the table content and pagination for the specific section
+                        target.html(responseCard.find('.table-responsive').html());
+                        paginationContainer.html(responseCard.find('.card-footer').html());
+                        
+                        // Remove loading indicator
+                        target.removeClass('loading');
+                        
+                        // Readjust table height
+                        adjustTableHeight();
                     },
                     error: function(xhr, status, error) {
                         console.error("Error loading data:", error);
+                        target.removeClass('loading');
+                        target.find('.text-center').remove();
+                        alert('Error loading data. Please try again.');
                     }
                 });
             });

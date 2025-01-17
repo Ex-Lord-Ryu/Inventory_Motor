@@ -57,9 +57,9 @@ class StockController extends Controller
         })->values();
 
         $motors = new \Illuminate\Pagination\LengthAwarePaginator(
-            $groupedMotors->forPage($request->page, 5),
+            $groupedMotors->forPage($request->page, 10),
             $groupedMotors->count(),
-            5,
+            10,
             $request->page,
             ['path' => $request->url(), 'query' => $request->query()]
         );
@@ -67,7 +67,7 @@ class StockController extends Controller
         $spareParts = $sparePartQuery
             ->with('sparePart')
             ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            ->paginate(10);
 
         $groupedMotors = $motors->groupBy('motor.nama_motor');
 
@@ -311,20 +311,26 @@ class StockController extends Controller
 
     public function soldItems(Request $request)
     {
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
-
-        $month = $request->input('month', $currentMonth);
-        $year = $request->input('year', $currentYear);
-
         $query = SoldMotor::with(['motor', 'warna']);
         $sparePartQuery = SoldSparePart::with('sparePart');
 
-        // Filter by month and year
-        $query->whereMonth('tanggal_terjual', $month)
-            ->whereYear('tanggal_terjual', $year);
-        $sparePartQuery->whereMonth('tanggal_terjual', $month)
-            ->whereYear('tanggal_terjual', $year);
+        // Filter by month and year jika ada filter
+        if ($request->has('filter')) {
+            if ($request->filled('month') && $request->month !== '') {
+                $query->whereMonth('tanggal_terjual', $request->month);
+                $sparePartQuery->whereMonth('tanggal_terjual', $request->month);
+            }
+            if ($request->filled('year') && $request->year !== '') {
+                $query->whereYear('tanggal_terjual', $request->year);
+                $sparePartQuery->whereYear('tanggal_terjual', $request->year);
+            }
+        } else {
+            // Default ke bulan dan tahun saat ini jika tidak ada filter
+            $query->whereMonth('tanggal_terjual', date('n'))
+                  ->whereYear('tanggal_terjual', date('Y'));
+            $sparePartQuery->whereMonth('tanggal_terjual', date('n'))
+                          ->whereYear('tanggal_terjual', date('Y'));
+        }
 
         // Search functionality
         if ($request->filled('search')) {
@@ -333,41 +339,33 @@ class StockController extends Controller
                 $q->whereHas('motor', function ($q) use ($search) {
                     $q->where('nama_motor', 'like', "%{$search}%");
                 })
-                    ->orWhereHas('warna', function ($q) use ($search) {
-                        $q->where('nama_warna', 'like', "%{$search}%");
-                    })
-                    ->orWhere('nomor_rangka', 'like', "%{$search}%")
-                    ->orWhere('nomor_mesin', 'like', "%{$search}%")
-                    ->orWhere('tanggal_terjual', 'like', "%{$search}%");
+                ->orWhereHas('warna', function ($q) use ($search) {
+                    $q->where('nama_warna', 'like', "%{$search}%");
+                })
+                ->orWhere('nomor_rangka', 'like', "%{$search}%")
+                ->orWhere('nomor_mesin', 'like', "%{$search}%")
+                ->orWhere('tanggal_terjual', 'like', "%{$search}%");
             });
 
             $sparePartQuery->where(function ($q) use ($search) {
                 $q->whereHas('sparePart', function ($q) use ($search) {
                     $q->where('nama_spare_part', 'like', "%{$search}%");
                 })
-                    ->orWhere('tanggal_terjual', 'like', "%{$search}%");
+                ->orWhere('tanggal_terjual', 'like', "%{$search}%");
             });
         }
 
-        $soldMotors = $query->orderBy('tanggal_terjual', 'desc')->get();
-        $soldSpareParts = $sparePartQuery->orderBy('tanggal_terjual', 'desc')->get();
+        $soldMotors = $query->orderBy('tanggal_terjual', 'desc')->paginate(10);
+        $soldSpareParts = $sparePartQuery->orderBy('tanggal_terjual', 'desc')->paginate(10);
 
         $months = [
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December'
+            1 => 'January', 2 => 'February', 3 => 'March',
+            4 => 'April', 5 => 'May', 6 => 'June',
+            7 => 'July', 8 => 'August', 9 => 'September',
+            10 => 'October', 11 => 'November', 12 => 'December'
         ];
         $years = range(date('Y'), date('Y') - 10);
 
-        return view('layouts.stock.sold-items', compact('soldMotors', 'soldSpareParts', 'months', 'years', 'month', 'year'));
+        return view('layouts.stock.sold-items', compact('soldMotors', 'soldSpareParts', 'months', 'years'));
     }
 }

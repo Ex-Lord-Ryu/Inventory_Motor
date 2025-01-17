@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class OrderSparePartController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         Log::info('Accessing OrderSparePartController@index');
         try {
@@ -21,46 +21,41 @@ class OrderSparePartController extends Controller
                 ->where('jumlah', '>', 0)
                 ->with('sparePart')
                 ->get();
-            Log::info('Available spare parts fetched: ' . $availableSpareParts->count());
 
             $groupedSpareParts = $availableSpareParts->groupBy('spare_part_id');
-            Log::info('Spare parts grouped: ' . $groupedSpareParts->count());
-
+            
             $availableSpareParts = $groupedSpareParts->map(function ($group) {
                 return [
                     'spare_part' => $group->first()->sparePart,
                     'stock' => $group->sum('jumlah'),
                 ];
             })->values()->toArray();
-            Log::info('Available spare parts processed');
 
-            Log::info('Fetching all spare parts');
-            $allSpareParts = StockSparePart::where('type', 'in')
-                ->where('jumlah', '>', 0)
-                ->with('sparePart')
-                ->get()
-                ->pluck('sparePart')
-                ->unique('id')
-                ->values();
-            Log::info('All spare parts fetched: ' . $allSpareParts->count());
-
-            Log::info('Fetching recent orders');
-            $recentOrders = OrderSparePart::with(['sparePart', 'user'])
+            $query = OrderSparePart::with(['sparePart', 'user'])
                 ->whereHas('sparePart')
-                ->orderBy('created_at', 'desc')
-                ->take(10)
-                ->get();
-            Log::info('Recent orders fetched: ' . $recentOrders->count());
+                ->orderBy('tanggal_terjual', 'desc');
 
+            // Hanya terapkan filter jika tombol filter ditekan
+            if ($request->has('filter')) {
+                if ($request->filled('month') && $request->month !== '') {
+                    $query->whereMonth('tanggal_terjual', $request->month);
+                }
+                if ($request->filled('year') && $request->year !== '') {
+                    $query->whereYear('tanggal_terjual', $request->year);
+                }
+            } else {
+                // Default ke bulan dan tahun saat ini jika tidak ada filter
+                $query->whereMonth('tanggal_terjual', date('n'))
+                      ->whereYear('tanggal_terjual', date('Y'));
+            }
+
+            $recentOrders = $query->get();
             $currentUser = Auth::user();
-            Log::info('Current user fetched: ' . $currentUser->id);
 
-            Log::info('Rendering view');
-            return view('layouts.order_spare_parts.index', compact('availableSpareParts', 'allSpareParts', 'recentOrders', 'currentUser'));
+            return view('layouts.order_spare_parts.index', compact('availableSpareParts', 'recentOrders', 'currentUser'));
         } catch (\Exception $e) {
             Log::error('Error in OrderSparePartController@index: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-            return redirect()->back()->with('error', 'An error occurred while loading the page. Please check the logs for more information.');
+            return redirect()->back()->with('error', 'An error occurred while loading the page.');
         }
     }
 
@@ -102,6 +97,7 @@ class OrderSparePartController extends Controller
                 'spare_part_id' => $request->spare_part_id,
                 'jumlah' => $request->jumlah,
                 'harga_jual' => $stockSparePart->harga_jual,
+                'tanggal_terjual' => now(),
             ];
 
             Log::info('Attempting to create order with data:', $orderData);

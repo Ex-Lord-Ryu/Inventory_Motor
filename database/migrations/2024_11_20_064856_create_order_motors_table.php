@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('nomor_mesin');
             $table->decimal('harga_jual', 15, 2);
             $table->integer('jumlah');
+            $table->timestamp('tanggal_terjual');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');

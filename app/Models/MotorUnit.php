@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class MotorUnit extends Model
 {
+    const STATUS_AVAILABLE = 'available';
+    const STATUS_SOLD = 'sold';
+
     protected $fillable = ['stock_id', 'nomor_rangka', 'nomor_mesin', 'status'];
 
     public function stockMotor()

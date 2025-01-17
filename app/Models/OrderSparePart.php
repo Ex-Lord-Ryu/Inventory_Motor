@@ -11,6 +11,7 @@ class OrderSparePart extends Model
         'spare_part_id',
         'jumlah',
         'harga_jual',
+        'tanggal_terjual',
     ];
 
     public function user()

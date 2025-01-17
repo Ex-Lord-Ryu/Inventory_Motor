@@ -99,7 +99,7 @@
                             <div class="form-group">
                                 <label for="jumlah">Quantity</label>
                                 <input type="number" name="jumlah" id="jumlah" class="form-control" min="1"
-                                    required>
+                                    value="1" required>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Place Order</button>
@@ -110,6 +110,47 @@
                 <div class="card mt-4">
                     <div class="card-header">
                         <h4>Recent Orders</h4>
+                        <div class="card-header-form">
+                            <form id="filterForm" method="GET" action="{{ route('order_motor.index') }}">
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <label for="monthFilter" class="form-label">Month</label>
+                                        <select name="month" class="form-control" id="monthFilter">
+                                            <option value="">All Months</option>
+                                            @foreach(range(1, 12) as $month)
+                                                <option value="{{ $month }}" 
+                                                    {{ (request('month', date('n')) == $month && !request('filter')) ? 'selected' : 
+                                                       (request('month') == $month && request('filter') ? 'selected' : '') }}>
+                                                    {{ date('F', mktime(0, 0, 0, $month, 1)) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label for="yearFilter" class="form-label">Year</label>
+                                        <select name="year" class="form-control" id="yearFilter">
+                                            <option value="">All Years</option>
+                                            @php
+                                                $currentYear = date('Y');
+                                                $startYear = 2020;
+                                            @endphp
+                                            @foreach(range($currentYear, $startYear) as $year)
+                                                <option value="{{ $year }}" 
+                                                    {{ (request('year', date('Y')) == $year && !request('filter')) ? 'selected' : 
+                                                       (request('year') == $year && request('filter') ? 'selected' : '') }}>
+                                                    {{ $year }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-2 d-flex align-items-end">
+                                        <input type="hidden" name="filter" value="true">
+                                        <button type="submit" class="btn btn-primary me-2">Filter</button>
+                                        <a href="{{ route('order_motor.index') }}" class="btn btn-secondary">Reset</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -136,7 +177,7 @@
                                             <td>{{ $order->motor->nama_motor }}</td>
                                             <td>{{ $order->warna->nama_warna }}</td>
                                             <td>{{ $order->jumlah }}</td>
-                                            <td>{{ $order->created_at->format('Y-m-d H:i:s') }}</td>
+                                            <td>{{ $order->tanggal_terjual }}</td>
                                             <td>
                                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                                     data-bs-target="#orderModal{{ $order->id }}"
@@ -179,7 +220,7 @@
                                     <td><strong>Name:</strong></td>
                                     <td>{{ $order->user->name }}</td>
                                     <td><strong>Date:</strong></td>
-                                    <td>{{ $order->created_at->format('Y-m-d H:i:s') }}</td>
+                                    <td>{{ $order->tanggal_terjual }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Role:</strong></td>
@@ -285,6 +326,77 @@
                 // Reset warna selection
                 warnaSelect.value = "";
             });
+
+            // Add filter change handlers
+            // $('#monthFilter, #yearFilter').on('change', function() {
+            //     $('#filterForm').submit();
+            // });
+
+            // Add this new code for form submission
+            $('#orderForm').on('submit', function(e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Menyimpan Data',
+                    text: 'Apakah Anda yakin ingin menyimpan order ini?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Simpan!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Menyimpan...',
+                            text: 'Mohon tunggu sebentar.',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            allowEnterKey: false,
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Submit form
+                        $.ajax({
+                            url: $(this).attr('action'),
+                            method: 'POST',
+                            data: $(this).serialize(),
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Order berhasil disimpan.',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                console.log('Error response:', xhr.responseJSON);
+
+                                let errorMessage =
+                                    'Terjadi kesalahan saat menyimpan order.';
+
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+
+                                console.log('Error message:', errorMessage);
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: errorMessage
+                                });
+                            }
+                        });
+                    }
+                });
+            });
         });
 
         // Add this new code to update the order number in the modal
@@ -361,70 +473,5 @@
                 new bootstrap.Modal(modal);
             });
         }
-
-        // Add this new code for form submission
-        $('form').on('submit', function(e) {
-            e.preventDefault();
-
-            Swal.fire({
-                title: 'Menyimpan Data',
-                text: 'Apakah Anda yakin ingin menyimpan order ini?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, Simpan!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Menyimpan...',
-                        text: 'Mohon tunggu sebentar.',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        allowEnterKey: false,
-                        showConfirmButton: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Submit form
-                    $.ajax({
-                        url: $(this).attr('action'),
-                        method: 'POST',
-                        data: $(this).serialize(),
-                        success: function(response) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: 'Order berhasil disimpan.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        },
-                        error: function(xhr) {
-                            console.log('Error response:', xhr.responseJSON);
-
-                            let errorMessage = 'Terjadi kesalahan saat menyimpan order.';
-
-                            if (xhr.responseJSON && xhr.responseJSON.message) {
-                                errorMessage = xhr.responseJSON.message;
-                            }
-
-                            console.log('Error message:', errorMessage);
-
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: errorMessage
-                            });
-                        }
-                    });
-                }
-            });
-        });
     </script>
 @endpush

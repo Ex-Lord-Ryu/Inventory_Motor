@@ -151,9 +151,9 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($distributor as $index => $item)
+                                        @foreach ($distributor as $item)
                                             <tr>
-                                                <td>{{ $index + 1 }}</td>
+                                                <td>{{ ($distributor->currentPage() - 1) * $distributor->perPage() + $loop->iteration }}</td>
                                                 <td>{{ $item->name_Vendor }}</td>
                                                 <td>{{ $item->telepon }}</td>
                                                 <td>{{ $item->alamat }}</td>

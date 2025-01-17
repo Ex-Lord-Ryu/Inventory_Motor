@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class OrderMotorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $availableMotors = StockMotor::where('type', 'in')
@@ -34,14 +34,26 @@ class OrderMotorController extends Controller
                     ];
                 })->values()->toArray();
 
-            $recentOrders = OrderMotor::with(['motor', 'warna', 'user'])
-                ->orderBy('created_at', 'desc')
-                ->take(10)
-                ->get();
+            $query = OrderMotor::with(['user', 'motor', 'warna'])
+                ->orderBy('tanggal_terjual', 'desc');
 
+            // Hanya terapkan filter jika tombol filter ditekan
+            if ($request->has('filter')) {
+                if ($request->filled('month') && $request->month !== '') {
+                    $query->whereMonth('tanggal_terjual', $request->month);
+                }
+                if ($request->filled('year') && $request->year !== '') {
+                    $query->whereYear('tanggal_terjual', $request->year);
+                }
+            } else {
+                // Default ke bulan dan tahun saat ini jika tidak ada filter
+                $query->whereMonth('tanggal_terjual', date('n'))
+                      ->whereYear('tanggal_terjual', date('Y'));
+            }
+
+            $recentOrders = $query->get();
             $currentUser = Auth::user();
 
-            Log::info('Index data retrieved successfully');
             return view('layouts.order_motor.index', compact('availableMotors', 'recentOrders', 'currentUser'));
         } catch (\Exception $e) {
             Log::error('Error in OrderMotorController@index: ' . $e->getMessage());
@@ -91,7 +103,8 @@ class OrderMotorController extends Controller
                     'jumlah' => 1,
                     'nomor_rangka' => $stockMotor->nomor_rangka,
                     'nomor_mesin' => $stockMotor->nomor_mesin,
-                    'harga_jual' => $stockMotor->harga_jual, // Tambahkan ini
+                    'harga_jual' => $stockMotor->harga_jual,
+                    'tanggal_terjual' => now(),
                 ];
 
                 Log::info('Attempting to create order with data:', $orderData);

@@ -92,7 +92,7 @@
                                 <tbody>
                                     @foreach ($purchaseOrdersDetails as $detail)
                                         <tr>
-                                            <td>{{ $detail->order ?? 'N/A' }}</td>
+                                            <td>{{ ($purchaseOrdersDetails->currentPage() - 1) * $purchaseOrdersDetails->perPage() + $loop->iteration }}</td>
                                             <td>{{ $detail->invoice }}</td>
                                             <td>{{ $detail->created_at ? $detail->created_at->format('Y-m-d H:i') : 'N/A' }}
                                             </td>

@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
 
         // 2 Operasional
         User::factory()->count(2)->create([
-            'password' => bcrypt('password123'),
+            'password' => bcrypt('admin123'),
             'role' => 'operasional',
         ])->each(function ($user, $index) {
             $user->email = 'operasional' . ($index + 1) . '@gmail.com';
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
 
         // 3 Finance
         User::factory()->count(3)->create([
-            'password' => bcrypt('password123'),
+            'password' => bcrypt('admin123'),
             'role' => 'finance',
         ])->each(function ($user, $index) {
             $user->email = 'finance' . ($index + 1) . '@gmail.com';
@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
 
         // 3 Sales
         User::factory()->count(3)->create([
-            'password' => bcrypt('password123'),
+            'password' => bcrypt('admin123'),
             'role' => 'sales',
         ])->each(function ($user, $index) {
             $user->email = 'sales' . ($index + 1) . '@gmail.com';

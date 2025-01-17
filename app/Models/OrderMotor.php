@@ -17,6 +17,7 @@ class OrderMotor extends Model
         'nomor_rangka',
         'nomor_mesin',
         'harga_jual',
+        'tanggal_terjual',
     ];
 
     public function user()

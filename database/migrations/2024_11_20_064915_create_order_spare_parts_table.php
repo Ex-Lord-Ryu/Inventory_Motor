@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('spare_part_id');
             $table->integer('jumlah');
             $table->decimal('harga_jual', 15, 2);
+            $table->timestamp('tanggal_terjual');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');

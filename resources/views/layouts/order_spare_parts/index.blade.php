@@ -94,7 +94,7 @@
                             <div class="form-group">
                                 <label for="jumlah">Quantity</label>
                                 <input type="number" name="jumlah" id="jumlah" class="form-control" min="1"
-                                    required>
+                                    value="1" required>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Place Order</button>
@@ -105,6 +105,47 @@
                 <div class="card mt-4">
                     <div class="card-header">
                         <h4>Recent Orders</h4>
+                        <div class="card-header-form">
+                            <form id="filterForm" method="GET" action="{{ route('order_spare_parts.index') }}">
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <label for="monthFilter" class="form-label">Month</label>
+                                        <select name="month" class="form-control" id="monthFilter">
+                                            <option value="">All Months</option>
+                                            @foreach(range(1, 12) as $month)
+                                                <option value="{{ $month }}" 
+                                                    {{ (request('month', date('n')) == $month && !request('filter')) ? 'selected' : 
+                                                       (request('month') == $month && request('filter') ? 'selected' : '') }}>
+                                                    {{ date('F', mktime(0, 0, 0, $month, 1)) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label for="yearFilter" class="form-label">Year</label>
+                                        <select name="year" class="form-control" id="yearFilter">
+                                            <option value="">All Years</option>
+                                            @php
+                                                $currentYear = date('Y');
+                                                $startYear = 2020;
+                                            @endphp
+                                            @foreach(range($currentYear, $startYear) as $year)
+                                                <option value="{{ $year }}" 
+                                                    {{ (request('year', date('Y')) == $year && !request('filter')) ? 'selected' : 
+                                                       (request('year') == $year && request('filter') ? 'selected' : '') }}>
+                                                    {{ $year }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-2 d-flex align-items-end">
+                                        <input type="hidden" name="filter" value="true">
+                                        <button type="submit" class="btn btn-primary me-2">Filter</button>
+                                        <a href="{{ route('order_spare_parts.index') }}" class="btn btn-secondary">Reset</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -126,7 +167,7 @@
                                             <td>{{ $order->user->name }}</td>
                                             <td>{{ $order->sparePart->nama_spare_part }}</td>
                                             <td>{{ $order->jumlah }}</td>
-                                            <td>{{ $order->created_at->format('Y-m-d H:i:s') }}</td>
+                                            <td>{{ $order->tanggal_terjual }}</td>
                                             <td>
                                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                                     data-bs-target="#orderModal{{ $recentOrders->count() - $index }}">
@@ -145,20 +186,20 @@
     </div>
 
     @foreach ($recentOrders as $index => $order)
-    <div class="modal fade" id="orderModal{{ $recentOrders->count() - $index }}" tabindex="-1"
-        aria-labelledby="orderModalLabel{{ $recentOrders->count() - $index }}" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="orderModalLabel{{ $recentOrders->count() - $index }}">
-                        <i class="fas fa-clipboard-list me-2"></i>Order Detail #{{ $recentOrders->count() - $index }}
-                    </h5>
+        <div class="modal fade" id="orderModal{{ $recentOrders->count() - $index }}" tabindex="-1"
+            aria-labelledby="orderModalLabel{{ $recentOrders->count() - $index }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="orderModalLabel{{ $recentOrders->count() - $index }}">
+                            <i class="fas fa-clipboard-list me-2"></i>Order Detail #{{ $recentOrders->count() - $index }}
+                        </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div id="printableArea{{ $order->id }}">
-                            <h2>Order Detail #{{ $recentOrders->count() - $index}}</h2>
+                            <h2>Order Detail #{{ $recentOrders->count() - $index }}</h2>
                             <table class="table table-bordered">
                                 <tr>
                                     <th colspan="2">User Information</th>
@@ -168,7 +209,7 @@
                                     <td><strong>Name:</strong></td>
                                     <td>{{ $order->user->name }}</td>
                                     <td><strong>Date:</strong></td>
-                                    <td>{{ $order->created_at->format('Y-m-d H:i:s') }}</td>
+                                    <td>{{ $order->tanggal_terjual }}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Role:</strong></td>

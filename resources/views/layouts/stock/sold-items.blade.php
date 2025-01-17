@@ -22,18 +22,25 @@
                                         <div class="form-group col-md-3">
                                             <label for="month">Month</label>
                                             <select name="month" id="month" class="form-control">
+                                                <option value="">All Months</option>
                                                 @foreach ($months as $key => $monthName)
                                                     <option value="{{ $key }}"
-                                                        {{ $month == $key ? 'selected' : '' }}>{{ $monthName }}</option>
+                                                        {{ (request('month', date('n')) == $key && !request('filter')) ? 'selected' : 
+                                                           (request('month') == $key && request('filter') ? 'selected' : '') }}>
+                                                        {{ $monthName }}
+                                                    </option>
                                                 @endforeach
                                             </select>
                                         </div>
                                         <div class="form-group col-md-3">
                                             <label for="year">Year</label>
                                             <select name="year" id="year" class="form-control">
+                                                <option value="">All Years</option>
                                                 @foreach ($years as $yearOption)
                                                     <option value="{{ $yearOption }}"
-                                                        {{ $year == $yearOption ? 'selected' : '' }}>{{ $yearOption }}
+                                                        {{ (request('year', date('Y')) == $yearOption && !request('filter')) ? 'selected' : 
+                                                           (request('year') == $yearOption && request('filter') ? 'selected' : '') }}>
+                                                        {{ $yearOption }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -45,7 +52,11 @@
                                         </div>
                                         <div class="form-group col-md-2">
                                             <label>&nbsp;</label>
-                                            <button type="submit" class="btn btn-primary btn-block">Filter</button>
+                                            <input type="hidden" name="filter" value="true">
+                                            <div class="d-flex">
+                                                <button type="submit" class="btn btn-primary flex-grow-1 me-2">Filter</button>
+                                                <a href="{{ route('stock.sold-items') }}" class="btn btn-secondary">Reset</a>
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
@@ -93,12 +104,18 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <!-- Pagination for Motors -->
+                                <div class="card-footer text-right">
+                                    <nav class="d-inline-block">
+                                        {{ $soldMotors->appends(request()->query())->links('pagination::bootstrap-4') }}
+                                    </nav>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="row mt-4">
+                <div class="row mt-4"></div>
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
@@ -132,6 +149,12 @@
                                             @endforelse
                                         </tbody>
                                     </table>
+                                </div>
+                                <!-- Pagination for Spare Parts -->
+                                <div class="card-footer text-right">
+                                    <nav class="d-inline-block">
+                                        {{ $soldSpareParts->appends(request()->query())->links('pagination::bootstrap-4') }}
+                                    </nav>
                                 </div>
                             </div>
                         </div>
